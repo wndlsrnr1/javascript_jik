@@ -196,6 +196,10 @@ mediaRecorder.start(); // timeslice 없음
 // stop() 호출 시 마지막 dataavailable 이벤트 발생
 ```
 
+> - start에 지정하면 데이터가 이용가능하다는 dataavailable 이벤트 발생
+
+> -
+
 ---
 
 ## 2.5 데이터 수집하기: dataavailable 이벤트

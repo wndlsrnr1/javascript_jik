@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 3 예제: Blob과 ArrayBuffer 변환</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      margin-top: 0;
+    }
+    .info-box {
+      background-color: #e3f2fd;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 15px 0;
+      border-left: 4px solid #2196F3;
+    }
+    .status {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 20px 0;
+      padding: 10px;
+      background-color: #f0f0f0;
+      border-radius: 4px;
+    }
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+    }
+    button {
+      padding: 12px 24px;
+      font-size: 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    #startBtn {
+      background-color: #4CAF50;
+      color: white;
+    }
+    #stopBtn {
+      background-color: #f44336;
+      color: white;
+    }
+    #testBtn {
+      background-color: #2196F3;
+      color: white;
+    }
+    #playback {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f9f9f9;
+      border-radius: 4px;
+    }
+    #playback audio {
+      width: 100%;
+    }
+    .warning {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #fff3cd;
+      border-left: 4px solid #ffc107;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔄 Chapter 3: Blob과 ArrayBuffer 변환 예제</h1>
+    
+    <div class="info-box" id="conversionInfo">
+      변환 정보가 여기에 표시됩니다.
+    </div>
+    
+    <div class="status" id="status">정지됨</div>
+    
+    <div class="button-group">
+      <button id="startBtn">녹음 시작 (변환 테스트)</button>
+      <button id="stopBtn" disabled>녹음 정지</button>
+      <button id="testBtn">변환 테스트 실행</button>
+    </div>
+
+    <div id="playback"></div>
+
+    <div class="warning">
+      <h3>📖 사용 방법</h3>
+      <ol>
+        <li>"변환 테스트 실행" 버튼을 클릭하여 기본 변환 테스트를 실행하세요.</li>
+        <li>"녹음 시작" 버튼을 클릭하여 실제 오디오를 녹음하고 변환하세요.</li>
+        <li>브라우저 콘솔(F12)에서 자세한 변환 로그를 확인할 수 있습니다.</li>
+        <li>각 청크가 Blob → ArrayBuffer로 변환되는 과정을 관찰하세요.</li>
+      </ol>
+    </div>
+  </div>
+
+  <script type="module">
+    import './03_Blob_변환_example.js';
+  </script>
+</body>
+</html>
+

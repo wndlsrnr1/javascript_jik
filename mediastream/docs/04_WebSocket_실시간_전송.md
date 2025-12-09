@@ -19,19 +19,20 @@
 **WebSocket**은 브라우저와 서버 간에 **양방향 실시간 통신**을 가능하게 하는 프로토콜입니다.
 
 일상 생활의 비유:
+
 - **전화 통화**: HTTP는 편지처럼 한 번 보내면 끝이지만, WebSocket은 전화처럼 실시간으로 대화할 수 있습니다.
 - **라이브 스트리밍**: 실시간으로 데이터를 주고받을 수 있습니다.
 - **채팅**: 양방향으로 즉시 메시지를 주고받을 수 있습니다.
 
 ### HTTP vs WebSocket
 
-| 구분 | HTTP | WebSocket |
-| ---- | ---- | --------- |
-| 연결 방식 | 요청-응답 (단방향) | 지속적 연결 (양방향) |
-| 연결 유지 | 매번 새로 연결 | 한 번 연결 후 유지 |
-| 실시간성 | 낮음 (폴링 필요) | 높음 (즉시 전송) |
-| 오버헤드 | 매 요청마다 헤더 | 연결 시 한 번만 |
-| 사용 사례 | 웹 페이지 로드 | 실시간 채팅, 게임, 스트리밍 |
+| 구분      | HTTP               | WebSocket                   |
+| --------- | ------------------ | --------------------------- |
+| 연결 방식 | 요청-응답 (단방향) | 지속적 연결 (양방향)        |
+| 연결 유지 | 매번 새로 연결     | 한 번 연결 후 유지          |
+| 실시간성  | 낮음 (폴링 필요)   | 높음 (즉시 전송)            |
+| 오버헤드  | 매 요청마다 헤더   | 연결 시 한 번만             |
+| 사용 사례 | 웹 페이지 로드     | 실시간 채팅, 게임, 스트리밍 |
 
 ### WebSocket의 장점
 
@@ -50,7 +51,7 @@
 
 ```typescript
 // WebSocket 서버 URL
-const wsUrl = 'ws://localhost:8000/ws/audio/';
+const wsUrl = "ws://localhost:8000/ws/audio/";
 const websocket = new WebSocket(wsUrl);
 ```
 
@@ -60,7 +61,7 @@ const websocket = new WebSocket(wsUrl);
 
 ```typescript
 // HTTPS와 마찬가지로 암호화된 연결
-const wsUrl = 'wss://example.com/ws/audio/';
+const wsUrl = "wss://example.com/ws/audio/";
 const websocket = new WebSocket(wsUrl);
 ```
 
@@ -71,9 +72,9 @@ WebSocket은 네 가지 상태를 가집니다:
 ```typescript
 // WebSocket 상태 상수
 console.log(WebSocket.CONNECTING); // 0: 연결 중
-console.log(WebSocket.OPEN);        // 1: 연결됨
-console.log(WebSocket.CLOSING);    // 2: 닫는 중
-console.log(WebSocket.CLOSED);      // 3: 닫힘
+console.log(WebSocket.OPEN); // 1: 연결됨
+console.log(WebSocket.CLOSING); // 2: 닫는 중
+console.log(WebSocket.CLOSED); // 3: 닫힘
 
 // 현재 상태 확인
 console.log(websocket.readyState); // 0, 1, 2, 3 중 하나
@@ -82,46 +83,46 @@ console.log(websocket.readyState); // 0, 1, 2, 3 중 하나
 ### 연결 이벤트
 
 ```typescript
-const websocket = new WebSocket('ws://localhost:8000/ws/audio/');
+const websocket = new WebSocket("ws://localhost:8000/ws/audio/");
 
 // 1. 연결 성공
 websocket.onopen = (event: Event) => {
-  console.log('WebSocket 연결 성공!');
-  console.log('서버 URL:', websocket.url);
-  console.log('프로토콜:', websocket.protocol);
+  console.log("WebSocket 연결 성공!");
+  console.log("서버 URL:", websocket.url);
+  console.log("프로토콜:", websocket.protocol);
 };
 
 // 2. 메시지 수신
 websocket.onmessage = (event: MessageEvent) => {
-  console.log('메시지 수신:', event.data);
-  
+  console.log("메시지 수신:", event.data);
+
   // 텍스트 메시지
-  if (typeof event.data === 'string') {
-    console.log('텍스트:', event.data);
+  if (typeof event.data === "string") {
+    console.log("텍스트:", event.data);
   }
-  
+
   // 이진 데이터 (ArrayBuffer)
   if (event.data instanceof ArrayBuffer) {
-    console.log('이진 데이터:', event.data.byteLength, 'bytes');
+    console.log("이진 데이터:", event.data.byteLength, "bytes");
   }
-  
+
   // Blob
   if (event.data instanceof Blob) {
-    console.log('Blob:', event.data.size, 'bytes');
+    console.log("Blob:", event.data.size, "bytes");
   }
 };
 
 // 3. 에러 발생
 websocket.onerror = (event: Event) => {
-  console.error('WebSocket 에러:', event);
+  console.error("WebSocket 에러:", event);
 };
 
 // 4. 연결 종료
 websocket.onclose = (event: CloseEvent) => {
-  console.log('WebSocket 연결 종료');
-  console.log('코드:', event.code);
-  console.log('이유:', event.reason);
-  console.log('정상 종료:', event.wasClean);
+  console.log("WebSocket 연결 종료");
+  console.log("코드:", event.code);
+  console.log("이유:", event.reason);
+  console.log("정상 종료:", event.wasClean);
 };
 ```
 
@@ -133,7 +134,7 @@ websocket.onclose = (event: CloseEvent) => {
 
 ```typescript
 if (websocket.readyState === WebSocket.OPEN) {
-  websocket.send('Hello, Server!');
+  websocket.send("Hello, Server!");
 }
 ```
 
@@ -152,7 +153,7 @@ if (websocket.readyState === WebSocket.OPEN) {
 ### Blob 전송
 
 ```typescript
-const blob = new Blob(['데이터'], { type: 'audio/webm' });
+const blob = new Blob(["데이터"], { type: "audio/webm" });
 if (websocket.readyState === WebSocket.OPEN) {
   websocket.send(blob);
 }
@@ -182,15 +183,15 @@ let mediaRecorder: MediaRecorder | null = null;
 // 1. WebSocket 연결
 async function connectWebSocket(): Promise<void> {
   return new Promise((resolve, reject) => {
-    websocket = new WebSocket('ws://localhost:8000/ws/audio/');
-    
+    websocket = new WebSocket("ws://localhost:8000/ws/audio/");
+
     websocket.onopen = () => {
-      console.log('WebSocket 연결 성공');
+      console.log("WebSocket 연결 성공");
       resolve();
     };
-    
+
     websocket.onerror = (error) => {
-      console.error('WebSocket 연결 실패:', error);
+      console.error("WebSocket 연결 실패:", error);
       reject(error);
     };
   });
@@ -199,28 +200,32 @@ async function connectWebSocket(): Promise<void> {
 // 2. MediaRecorder 설정
 async function setupMediaRecorder(): Promise<void> {
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-  
+
   mediaRecorder = new MediaRecorder(stream, {
-    mimeType: 'audio/webm;codecs=opus',
+    mimeType: "audio/webm;codecs=opus",
   });
-  
+
   // 3. 데이터 수집 및 전송
   mediaRecorder.ondataavailable = async (event: BlobEvent) => {
-    if (event.data && event.data.size > 0 && websocket?.readyState === WebSocket.OPEN) {
+    if (
+      event.data &&
+      event.data.size > 0 &&
+      websocket?.readyState === WebSocket.OPEN
+    ) {
       try {
         // Blob을 ArrayBuffer로 변환
         const arrayBuffer = await event.data.arrayBuffer();
-        
+
         // WebSocket으로 전송
         websocket.send(arrayBuffer);
-        
-        console.log('전송 완료:', arrayBuffer.byteLength, 'bytes');
+
+        console.log("전송 완료:", arrayBuffer.byteLength, "bytes");
       } catch (error) {
-        console.error('전송 실패:', error);
+        console.error("전송 실패:", error);
       }
     }
   };
-  
+
   // 4. 녹화 시작 (100ms마다 청크 수집)
   mediaRecorder.start(100);
 }
@@ -229,7 +234,7 @@ async function setupMediaRecorder(): Promise<void> {
 async function startStreaming(): Promise<void> {
   await connectWebSocket();
   await setupMediaRecorder();
-  console.log('실시간 오디오 스트리밍 시작!');
+  console.log("실시간 오디오 스트리밍 시작!");
 }
 ```
 
@@ -239,7 +244,7 @@ async function startStreaming(): Promise<void> {
 
 ```typescript
 interface AudioChunkMetadata {
-  type: 'audio';
+  type: "audio";
   timestamp: number;
   sequence: number;
   mimeType: string;
@@ -249,29 +254,34 @@ interface AudioChunkMetadata {
 let sequenceNumber = 0;
 
 mediaRecorder.ondataavailable = async (event: BlobEvent) => {
-  if (event.data && event.data.size > 0 && websocket?.readyState === WebSocket.OPEN) {
+  if (
+    event.data &&
+    event.data.size > 0 &&
+    websocket?.readyState === WebSocket.OPEN
+  ) {
     try {
       // 1. 메타데이터 생성
       const metadata: AudioChunkMetadata = {
-        type: 'audio',
+        type: "audio",
         timestamp: Date.now(),
         sequence: sequenceNumber++,
         mimeType: event.data.type,
         size: event.data.size,
       };
-      
+
       // 2. 메타데이터를 JSON으로 전송
-      websocket.send(JSON.stringify({
-        type: 'metadata',
-        data: metadata,
-      }));
-      
+      websocket.send(
+        JSON.stringify({
+          type: "metadata",
+          data: metadata,
+        })
+      );
+
       // 3. 오디오 데이터를 ArrayBuffer로 변환하여 전송
       const arrayBuffer = await event.data.arrayBuffer();
       websocket.send(arrayBuffer);
-      
     } catch (error) {
-      console.error('전송 실패:', error);
+      console.error("전송 실패:", error);
     }
   }
 };
@@ -292,29 +302,32 @@ function isWebSocketConnected(ws: WebSocket | null): boolean {
 if (isWebSocketConnected(websocket)) {
   websocket.send(data);
 } else {
-  console.warn('WebSocket이 연결되지 않았습니다.');
+  console.warn("WebSocket이 연결되지 않았습니다.");
 }
 ```
 
 ### 안전한 전송 함수
 
 ```typescript
-function safeSend(ws: WebSocket | null, data: string | ArrayBuffer | Blob): boolean {
+function safeSend(
+  ws: WebSocket | null,
+  data: string | ArrayBuffer | Blob
+): boolean {
   if (!ws) {
-    console.warn('WebSocket이 초기화되지 않았습니다.');
+    console.warn("WebSocket이 초기화되지 않았습니다.");
     return false;
   }
-  
+
   if (ws.readyState !== WebSocket.OPEN) {
-    console.warn('WebSocket이 연결되지 않았습니다. 상태:', ws.readyState);
+    console.warn("WebSocket이 연결되지 않았습니다. 상태:", ws.readyState);
     return false;
   }
-  
+
   try {
     ws.send(data);
     return true;
   } catch (error) {
-    console.error('전송 실패:', error);
+    console.error("전송 실패:", error);
     return false;
   }
 }
@@ -347,27 +360,32 @@ class WebSocketManager {
   connect(): Promise<void> {
     return new Promise((resolve, reject) => {
       this.ws = new WebSocket(this.url);
-      
+
       this.ws.onopen = () => {
-        console.log('WebSocket 연결 성공');
+        console.log("WebSocket 연결 성공");
         this.reconnectAttempts = 0;
         resolve();
       };
-      
+
       this.ws.onerror = (error) => {
-        console.error('WebSocket 에러:', error);
+        console.error("WebSocket 에러:", error);
         reject(error);
       };
-      
+
       this.ws.onclose = (event: CloseEvent) => {
-        console.log('WebSocket 연결 종료:', event.code, event.reason);
-        
+        console.log("WebSocket 연결 종료:", event.code, event.reason);
+
         // 정상 종료가 아니면 재연결 시도
-        if (!event.wasClean && this.reconnectAttempts < this.maxReconnectAttempts) {
+        if (
+          !event.wasClean &&
+          this.reconnectAttempts < this.maxReconnectAttempts
+        ) {
           this.reconnectAttempts++;
           const delay = this.reconnectDelay * this.reconnectAttempts;
-          console.log(`${delay}ms 후 재연결 시도 (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`);
-          
+          console.log(
+            `${delay}ms 후 재연결 시도 (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`
+          );
+
           setTimeout(() => {
             this.connect().catch(console.error);
           }, delay);
@@ -397,7 +415,7 @@ class WebSocketManager {
 }
 
 // 사용 예제
-const wsManager = new WebSocketManager('ws://localhost:8000/ws/audio/');
+const wsManager = new WebSocketManager("ws://localhost:8000/ws/audio/");
 await wsManager.connect();
 
 // 데이터 전송
@@ -432,46 +450,45 @@ class RobustWebSocket {
     return new Promise((resolve, reject) => {
       try {
         this.ws = new WebSocket(this.url);
-        
+
         // 타임아웃 설정 (5초)
         const timeout = setTimeout(() => {
           if (this.ws?.readyState !== WebSocket.OPEN) {
             this.ws?.close();
-            reject(new Error('연결 타임아웃'));
+            reject(new Error("연결 타임아웃"));
           }
         }, 5000);
-        
+
         this.ws.onopen = () => {
           clearTimeout(timeout);
-          console.log('WebSocket 연결 성공');
+          console.log("WebSocket 연결 성공");
           resolve();
         };
-        
+
         this.ws.onerror = (error) => {
           clearTimeout(timeout);
-          console.error('WebSocket 에러:', error);
+          console.error("WebSocket 에러:", error);
           reject(error);
         };
-        
+
         this.ws.onclose = (event: CloseEvent) => {
-          console.log('WebSocket 종료:', {
+          console.log("WebSocket 종료:", {
             code: event.code,
             reason: event.reason,
             wasClean: event.wasClean,
           });
-          
+
           // 비정상 종료 처리
           if (!event.wasClean) {
-            console.error('비정상 종료:', event.code, event.reason);
+            console.error("비정상 종료:", event.code, event.reason);
           }
         };
-        
+
         this.ws.onmessage = (event: MessageEvent) => {
           if (this.onMessageCallback && event.data instanceof ArrayBuffer) {
             this.onMessageCallback(event.data);
           }
         };
-        
       } catch (error) {
         reject(error);
       }
@@ -480,15 +497,15 @@ class RobustWebSocket {
 
   send(data: string | ArrayBuffer | Blob): boolean {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
-      console.warn('WebSocket이 연결되지 않았습니다.');
+      console.warn("WebSocket이 연결되지 않았습니다.");
       return false;
     }
-    
+
     try {
       this.ws.send(data);
       return true;
     } catch (error) {
-      console.error('전송 실패:', error);
+      console.error("전송 실패:", error);
       return false;
     }
   }
@@ -517,14 +534,14 @@ class RobustWebSocket {
 ```typescript
 // 1. 연결 시작 메시지
 interface StartMessage {
-  type: 'start';
+  type: "start";
   mimeType: string;
   sampleRate?: number;
 }
 
 // 2. 오디오 청크 메시지
 interface AudioChunkMessage {
-  type: 'audio';
+  type: "audio";
   sequence: number;
   timestamp: number;
   data: ArrayBuffer; // 실제 오디오 데이터
@@ -532,12 +549,12 @@ interface AudioChunkMessage {
 
 // 3. 종료 메시지
 interface EndMessage {
-  type: 'end';
+  type: "end";
 }
 
 // 4. 서버 응답 메시지
 interface ServerResponse {
-  type: 'transcription' | 'error' | 'ack';
+  type: "transcription" | "error" | "ack";
   data?: string;
   sequence?: number;
 }
@@ -559,10 +576,10 @@ class AudioStreamClient {
   async start(): Promise<void> {
     // 1. WebSocket 연결
     await this.connectWebSocket();
-    
+
     // 2. MediaRecorder 설정
     await this.setupMediaRecorder();
-    
+
     // 3. 시작 메시지 전송
     this.sendStartMessage();
   }
@@ -570,17 +587,17 @@ class AudioStreamClient {
   private async connectWebSocket(): Promise<void> {
     return new Promise((resolve, reject) => {
       this.ws = new WebSocket(this.url);
-      
+
       this.ws.onopen = () => {
-        console.log('Django 서버 연결 성공');
+        console.log("Django 서버 연결 성공");
         resolve();
       };
-      
+
       this.ws.onerror = (error) => {
-        console.error('연결 실패:', error);
+        console.error("연결 실패:", error);
         reject(error);
       };
-      
+
       this.ws.onmessage = (event: MessageEvent) => {
         this.handleServerMessage(event);
       };
@@ -589,35 +606,41 @@ class AudioStreamClient {
 
   private async setupMediaRecorder(): Promise<void> {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    
+
     this.mediaRecorder = new MediaRecorder(stream, {
-      mimeType: 'audio/webm;codecs=opus',
+      mimeType: "audio/webm;codecs=opus",
     });
-    
+
     this.mediaRecorder.ondataavailable = async (event: BlobEvent) => {
-      if (event.data && event.data.size > 0 && this.ws?.readyState === WebSocket.OPEN) {
+      if (
+        event.data &&
+        event.data.size > 0 &&
+        this.ws?.readyState === WebSocket.OPEN
+      ) {
         const arrayBuffer = await event.data.arrayBuffer();
-        
+
         // 오디오 청크 전송
         const message: AudioChunkMessage = {
-          type: 'audio',
+          type: "audio",
           sequence: this.sequenceNumber++,
           timestamp: Date.now(),
           data: arrayBuffer,
         };
-        
+
         // 메타데이터를 JSON으로, 데이터를 ArrayBuffer로 분리 전송
-        this.ws.send(JSON.stringify({
-          type: 'audio',
-          sequence: message.sequence,
-          timestamp: message.timestamp,
-          size: arrayBuffer.byteLength,
-        }));
-        
+        this.ws.send(
+          JSON.stringify({
+            type: "audio",
+            sequence: message.sequence,
+            timestamp: message.timestamp,
+            size: arrayBuffer.byteLength,
+          })
+        );
+
         this.ws.send(arrayBuffer);
       }
     };
-    
+
     this.mediaRecorder.start(100); // 100ms마다 청크 수집
   }
 
@@ -625,34 +648,34 @@ class AudioStreamClient {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       return;
     }
-    
+
     const message: StartMessage = {
-      type: 'start',
-      mimeType: this.mediaRecorder?.mimeType || 'audio/webm',
+      type: "start",
+      mimeType: this.mediaRecorder?.mimeType || "audio/webm",
     };
-    
+
     this.ws.send(JSON.stringify(message));
   }
 
   private handleServerMessage(event: MessageEvent): void {
-    if (typeof event.data === 'string') {
+    if (typeof event.data === "string") {
       try {
         const response: ServerResponse = JSON.parse(event.data);
-        
+
         switch (response.type) {
-          case 'transcription':
-            console.log('전사 결과:', response.data);
+          case "transcription":
+            console.log("전사 결과:", response.data);
             // UI에 표시
             break;
-          case 'error':
-            console.error('서버 에러:', response.data);
+          case "error":
+            console.error("서버 에러:", response.data);
             break;
-          case 'ack':
-            console.log('서버 확인:', response.sequence);
+          case "ack":
+            console.log("서버 확인:", response.sequence);
             break;
         }
       } catch (error) {
-        console.error('메시지 파싱 실패:', error);
+        console.error("메시지 파싱 실패:", error);
       }
     }
   }
@@ -662,9 +685,9 @@ class AudioStreamClient {
       this.mediaRecorder.stop();
       this.mediaRecorder = null;
     }
-    
+
     if (this.ws) {
-      this.ws.send(JSON.stringify({ type: 'end' }));
+      this.ws.send(JSON.stringify({ type: "end" }));
       this.ws.close();
       this.ws = null;
     }
@@ -672,7 +695,7 @@ class AudioStreamClient {
 }
 
 // 사용 예제
-const client = new AudioStreamClient('ws://localhost:8000/ws/audio/');
+const client = new AudioStreamClient("ws://localhost:8000/ws/audio/");
 await client.start();
 
 // 10초 후 정지
@@ -707,29 +730,34 @@ class TransmissionQueue {
   private maxQueueSize = 10;
   private isTransmitting = false;
 
-  async add(data: ArrayBuffer, sendFn: (data: ArrayBuffer) => Promise<void>): Promise<void> {
+  async add(
+    data: ArrayBuffer,
+    sendFn: (data: ArrayBuffer) => Promise<void>
+  ): Promise<void> {
     this.queue.push(data);
-    
+
     // 큐가 너무 크면 오래된 데이터 제거
     if (this.queue.length > this.maxQueueSize) {
       const removed = this.queue.shift();
-      console.warn('큐 오버플로우, 오래된 데이터 제거:', removed?.byteLength);
+      console.warn("큐 오버플로우, 오래된 데이터 제거:", removed?.byteLength);
     }
-    
+
     // 전송 중이 아니면 시작
     if (!this.isTransmitting) {
       this.processQueue(sendFn);
     }
   }
 
-  private async processQueue(sendFn: (data: ArrayBuffer) => Promise<void>): Promise<void> {
+  private async processQueue(
+    sendFn: (data: ArrayBuffer) => Promise<void>
+  ): Promise<void> {
     this.isTransmitting = true;
-    
+
     while (this.queue.length > 0) {
       const data = this.queue.shift()!;
       await sendFn(data);
     }
-    
+
     this.isTransmitting = false;
   }
 }
@@ -765,4 +793,3 @@ class TransmissionQueue {
 3. 자동 재연결 기능이 있는 WebSocket 클래스를 만드세요.
 
 답안은 `codes/04_WebSocket_streaming.ts` 파일을 참고하세요.
-

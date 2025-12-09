@@ -15,9 +15,10 @@
 
 ### 개념 이해하기
 
-**MediaStream**은 브라우저에서 오디오나 비디오 데이터를 실시간으로 전달하는 "파이프"라고 생각하면 됩니다. 
+**MediaStream**은 브라우저에서 오디오나 비디오 데이터를 실시간으로 전달하는 "파이프"라고 생각하면 됩니다.
 
 일상 생활의 비유를 들어보면:
+
 - **수도관**: 물이 흐르는 파이프처럼, MediaStream은 오디오/비디오 데이터가 흐르는 통로입니다.
 - **TV 방송**: 실시간으로 방송되는 프로그램처럼, MediaStream은 실시간으로 데이터를 전달합니다.
 - **전화 통화**: 통화 중 음성이 실시간으로 전달되듯이, MediaStream은 데이터를 연속적으로 전달합니다.
@@ -29,8 +30,8 @@ MediaStream은 **하나 이상의 미디어 트랙(MediaStreamTrack)**을 포함
 ```typescript
 // MediaStream의 구조 (개념적 표현)
 interface MediaStream {
-  id: string;                    // 스트림의 고유 식별자
-  active: boolean;               // 스트림이 활성화되어 있는지
+  id: string; // 스트림의 고유 식별자
+  active: boolean; // 스트림이 활성화되어 있는지
   getTracks(): MediaStreamTrack[]; // 포함된 트랙들 가져오기
 }
 ```
@@ -60,11 +61,11 @@ async function requestMicrophone(): Promise<MediaStream> {
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: true,
     });
-    
-    console.log('마이크 접근 성공!', stream);
+
+    console.log("마이크 접근 성공!", stream);
     return stream;
   } catch (error) {
-    console.error('마이크 접근 실패:', error);
+    console.error("마이크 접근 실패:", error);
     throw error;
   }
 }
@@ -82,6 +83,7 @@ async function requestMicrophone(): Promise<MediaStream> {
 `getUserMedia()`는 사용자의 허가를 기다려야 하므로 비동기 함수입니다. 두 가지 방식으로 사용할 수 있습니다:
 
 **방법 1: async/await (권장)**
+
 ```typescript
 async function getStream() {
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -90,6 +92,7 @@ async function getStream() {
 ```
 
 **방법 2: Promise.then()**
+
 ```typescript
 navigator.mediaDevices
   .getUserMedia({ audio: true })
@@ -135,9 +138,9 @@ const constraints4 = {}; // ❌ 에러!
 // 오디오만, 하지만 고품질로
 const audioConstraints = {
   audio: {
-    echoCancellation: true,    // 에코 제거 활성화
-    noiseSuppression: true,    // 노이즈 제거 활성화
-    autoGainControl: true,     // 자동 볼륨 조절
+    echoCancellation: true, // 에코 제거 활성화
+    noiseSuppression: true, // 노이즈 제거 활성화
+    autoGainControl: true, // 자동 볼륨 조절
   },
 };
 
@@ -145,9 +148,9 @@ const audioConstraints = {
 const videoConstraints = {
   audio: true,
   video: {
-    width: { ideal: 1280 },     // 이상적인 너비
-    height: { ideal: 720 },     // 이상적인 높이
-    facingMode: 'user',        // 전면 카메라 (모바일)
+    width: { ideal: 1280 }, // 이상적인 너비
+    height: { ideal: 720 }, // 이상적인 높이
+    facingMode: "user", // 전면 카메라 (모바일)
   },
 };
 ```
@@ -196,17 +199,20 @@ const exact = {
 `getUserMedia()`는 **보안이 중요한 기능**이므로, 반드시 **Secure Context**에서만 사용할 수 있습니다.
 
 Secure Context란:
+
 - **HTTPS**로 접속한 페이지
 - **localhost**에서 실행되는 페이지
 - **file://** 프로토콜로 열린 파일
 
 ❌ **안전하지 않은 경우**:
+
 ```typescript
 // HTTP로 접속한 페이지에서는 작동하지 않음
 // http://example.com ❌
 ```
 
 ✅ **안전한 경우**:
+
 ```typescript
 // HTTPS로 접속한 페이지
 // https://example.com ✅
@@ -232,7 +238,9 @@ Secure Context란:
 
 ```typescript
 async function checkPermission(): Promise<PermissionState> {
-  const result = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+  const result = await navigator.permissions.query({
+    name: "microphone" as PermissionName,
+  });
   return result.state; // 'granted', 'denied', 'prompt'
 }
 ```
@@ -253,14 +261,15 @@ async function checkPermission(): Promise<PermissionState> {
 try {
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 } catch (error) {
-  if (error instanceof DOMException && error.name === 'NotAllowedError') {
-    console.error('사용자가 마이크 사용을 거부했습니다.');
+  if (error instanceof DOMException && error.name === "NotAllowedError") {
+    console.error("사용자가 마이크 사용을 거부했습니다.");
     // 사용자에게 권한이 필요하다고 안내
   }
 }
 ```
 
 **해결 방법**:
+
 - 사용자에게 권한이 왜 필요한지 설명
 - 브라우저 설정에서 권한을 허용하도록 안내
 
@@ -272,14 +281,15 @@ try {
 try {
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 } catch (error) {
-  if (error instanceof DOMException && error.name === 'NotFoundError') {
-    console.error('마이크를 찾을 수 없습니다.');
+  if (error instanceof DOMException && error.name === "NotFoundError") {
+    console.error("마이크를 찾을 수 없습니다.");
     // 사용자에게 마이크를 연결하도록 안내
   }
 }
 ```
 
 **해결 방법**:
+
 - 마이크가 연결되어 있는지 확인
 - 다른 마이크를 선택하도록 안내
 
@@ -291,14 +301,15 @@ try {
 try {
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 } catch (error) {
-  if (error instanceof DOMException && error.name === 'NotReadableError') {
-    console.error('마이크가 다른 프로그램에서 사용 중입니다.');
+  if (error instanceof DOMException && error.name === "NotReadableError") {
+    console.error("마이크가 다른 프로그램에서 사용 중입니다.");
     // 사용자에게 다른 프로그램을 종료하도록 안내
   }
 }
 ```
 
 **해결 방법**:
+
 - 다른 애플리케이션에서 마이크를 사용하고 있는지 확인
 - 해당 애플리케이션을 종료
 
@@ -312,14 +323,15 @@ try {
     video: { width: { exact: 9999 }, height: { exact: 9999 } },
   });
 } catch (error) {
-  if (error instanceof DOMException && error.name === 'OverconstrainedError') {
-    console.error('요청한 해상도를 지원하는 카메라가 없습니다.');
+  if (error instanceof DOMException && error.name === "OverconstrainedError") {
+    console.error("요청한 해상도를 지원하는 카메라가 없습니다.");
     // 더 낮은 해상도로 재시도
   }
 }
 ```
 
 **해결 방법**:
+
 - Constraints를 완화 (exact → ideal 또는 min/max)
 - 사용 가능한 장치 목록 확인 후 적절한 값 선택
 
@@ -332,13 +344,14 @@ try {
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 } catch (error) {
   if (error instanceof TypeError) {
-    console.error('보안 컨텍스트가 아닙니다. HTTPS를 사용하세요.');
+    console.error("보안 컨텍스트가 아닙니다. HTTPS를 사용하세요.");
     // HTTPS로 리다이렉트하거나 안내
   }
 }
 ```
 
 **해결 방법**:
+
 - HTTPS로 접속
 - localhost에서 테스트
 
@@ -349,25 +362,31 @@ try {
 ```typescript
 function handleGetUserMediaError(error: unknown): void {
   if (!(error instanceof DOMException)) {
-    console.error('알 수 없는 에러:', error);
+    console.error("알 수 없는 에러:", error);
     return;
   }
 
   switch (error.name) {
-    case 'NotAllowedError':
-      alert('마이크 사용 권한이 필요합니다. 브라우저 설정에서 권한을 허용해주세요.');
+    case "NotAllowedError":
+      alert(
+        "마이크 사용 권한이 필요합니다. 브라우저 설정에서 권한을 허용해주세요."
+      );
       break;
-    case 'NotFoundError':
-      alert('마이크를 찾을 수 없습니다. 마이크가 연결되어 있는지 확인해주세요.');
+    case "NotFoundError":
+      alert(
+        "마이크를 찾을 수 없습니다. 마이크가 연결되어 있는지 확인해주세요."
+      );
       break;
-    case 'NotReadableError':
-      alert('마이크가 다른 프로그램에서 사용 중입니다. 다른 프로그램을 종료해주세요.');
+    case "NotReadableError":
+      alert(
+        "마이크가 다른 프로그램에서 사용 중입니다. 다른 프로그램을 종료해주세요."
+      );
       break;
-    case 'OverconstrainedError':
-      alert('요청한 설정을 지원하지 않는 마이크입니다.');
+    case "OverconstrainedError":
+      alert("요청한 설정을 지원하지 않는 마이크입니다.");
       break;
     default:
-      console.error('getUserMedia 에러:', error.name, error.message);
+      console.error("getUserMedia 에러:", error.name, error.message);
   }
 }
 
@@ -400,7 +419,7 @@ async function requestMicrophoneAccess(
 ): Promise<MediaStream | null> {
   // 1. getUserMedia 지원 확인
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    console.error('이 브라우저는 getUserMedia를 지원하지 않습니다.');
+    console.error("이 브라우저는 getUserMedia를 지원하지 않습니다.");
     return null;
   }
 
@@ -416,12 +435,12 @@ async function requestMicrophoneAccess(
   // 3. 마이크 접근 시도
   try {
     const stream = await navigator.mediaDevices.getUserMedia(constraints);
-    console.log('마이크 접근 성공!', stream);
-    
+    console.log("마이크 접근 성공!", stream);
+
     // 4. 스트림 정보 출력
     const audioTracks = stream.getAudioTracks();
     audioTracks.forEach((track) => {
-      console.log('오디오 트랙:', {
+      console.log("오디오 트랙:", {
         id: track.id,
         label: track.label,
         enabled: track.enabled,
@@ -446,7 +465,7 @@ async function startRecording(): Promise<void> {
 
   if (stream) {
     // 스트림을 사용하여 녹음 시작
-    console.log('녹음 준비 완료!');
+    console.log("녹음 준비 완료!");
   }
 }
 ```
@@ -464,17 +483,17 @@ function stopStream(stream: MediaStream): void {
   // 모든 트랙을 정지
   stream.getTracks().forEach((track) => {
     track.stop();
-    console.log('트랙 정지:', track.kind, track.id);
+    console.log("트랙 정지:", track.kind, track.id);
   });
 }
 
 // 사용 예제
 async function recordAndStop(): Promise<void> {
   const stream = await requestMicrophoneAccess();
-  
+
   if (stream) {
     // 녹음 작업 수행...
-    
+
     // 작업 완료 후 정리
     stopStream(stream);
   }
@@ -527,4 +546,3 @@ function unmuteMicrophone(stream: MediaStream): void {
 3. 스트림을 정리하는 함수를 작성하세요.
 
 답안은 `codes/01_getUserMedia_example.ts` 파일을 참고하세요.
-

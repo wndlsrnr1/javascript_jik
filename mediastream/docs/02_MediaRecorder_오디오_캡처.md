@@ -19,6 +19,7 @@
 **MediaRecorder**는 MediaStream에서 흐르는 오디오/비디오 데이터를 **실제로 수집하고 저장**하는 도구입니다.
 
 일상 생활의 비유:
+
 - **녹음기**: 실제 녹음기처럼 MediaStream의 데이터를 기록합니다.
 - **비디오 카메라**: 영상을 촬영하듯이 스트림을 녹화합니다.
 - **수집함**: 데이터를 모아서 나중에 사용할 수 있게 합니다.
@@ -34,12 +35,12 @@ MediaRecorder는 다음과 같은 일을 합니다:
 
 ### MediaRecorder vs MediaStream
 
-| 구분 | MediaStream | MediaRecorder |
-| ---- | ----------- | ------------- |
-| 역할 | 데이터를 실시간으로 전달 | 데이터를 수집하고 저장 |
-| 데이터 형태 | 실시간 스트림 | Blob (청크 단위) |
-| 저장 여부 | 저장하지 않음 | 수집하여 저장 가능 |
-| 사용 목적 | 실시간 재생, 전송 | 녹화, 저장, 분석 |
+| 구분        | MediaStream              | MediaRecorder          |
+| ----------- | ------------------------ | ---------------------- |
+| 역할        | 데이터를 실시간으로 전달 | 데이터를 수집하고 저장 |
+| 데이터 형태 | 실시간 스트림            | Blob (청크 단위)       |
+| 저장 여부   | 저장하지 않음            | 수집하여 저장 가능     |
+| 사용 목적   | 실시간 재생, 전송        | 녹화, 저장, 분석       |
 
 ---
 
@@ -63,14 +64,14 @@ MediaRecorder를 생성할 때 옵션을 지정할 수 있습니다:
 
 ```typescript
 interface MediaRecorderOptions {
-  mimeType?: string;              // MIME 타입 (예: "audio/webm")
-  audioBitsPerSecond?: number;     // 오디오 비트레이트
-  videoBitsPerSecond?: number;     // 비디오 비트레이트
-  bitsPerSecond?: number;          // 전체 비트레이트
+  mimeType?: string; // MIME 타입 (예: "audio/webm")
+  audioBitsPerSecond?: number; // 오디오 비트레이트
+  videoBitsPerSecond?: number; // 비디오 비트레이트
+  bitsPerSecond?: number; // 전체 비트레이트
 }
 
 const options: MediaRecorderOptions = {
-  mimeType: 'audio/webm;codecs=opus',
+  mimeType: "audio/webm;codecs=opus",
   audioBitsPerSecond: 128000, // 128 kbps
 };
 
@@ -83,13 +84,13 @@ const mediaRecorder = new MediaRecorder(stream, options);
 
 ```typescript
 // 특정 MIME 타입 지원 여부 확인
-if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
-  console.log('WebM Opus 코덱을 지원합니다!');
+if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
+  console.log("WebM Opus 코덱을 지원합니다!");
   const recorder = new MediaRecorder(stream, {
-    mimeType: 'audio/webm;codecs=opus',
+    mimeType: "audio/webm;codecs=opus",
   });
 } else {
-  console.log('WebM Opus를 지원하지 않습니다. 기본 형식 사용');
+  console.log("WebM Opus를 지원하지 않습니다. 기본 형식 사용");
   const recorder = new MediaRecorder(stream);
 }
 ```
@@ -99,11 +100,11 @@ if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
 ```typescript
 function getSupportedMimeTypes(): string[] {
   const types = [
-    'audio/webm',
-    'audio/webm;codecs=opus',
-    'audio/ogg;codecs=opus',
-    'audio/mp4',
-    'audio/mpeg',
+    "audio/webm",
+    "audio/webm;codecs=opus",
+    "audio/ogg;codecs=opus",
+    "audio/mp4",
+    "audio/mpeg",
   ];
 
   return types.filter((type) => MediaRecorder.isTypeSupported(type));
@@ -111,7 +112,7 @@ function getSupportedMimeTypes(): string[] {
 
 // 사용 예제
 const supportedTypes = getSupportedMimeTypes();
-console.log('지원하는 형식:', supportedTypes);
+console.log("지원하는 형식:", supportedTypes);
 ```
 
 ---
@@ -163,7 +164,7 @@ MediaRecorder의 주요 메서드들:
 ```typescript
 const mediaRecorder = new MediaRecorder(stream);
 mediaRecorder.start();
-console.log('녹화 시작!', mediaRecorder.state); // "recording"
+console.log("녹화 시작!", mediaRecorder.state); // "recording"
 ```
 
 ### Timeslice를 사용한 청크 단위 녹화
@@ -179,6 +180,7 @@ mediaRecorder.start(100); // 100ms = 0.1초
 ```
 
 **Timeslice를 사용하는 이유**:
+
 - 실시간 전송: 작은 청크로 나누어 WebSocket 등으로 전송 가능
 - 메모리 관리: 큰 데이터를 한 번에 받지 않고 나누어 받음
 - 진행 상황 추적: 주기적으로 데이터를 받아 진행 상황 확인 가능
@@ -208,7 +210,7 @@ const chunks: Blob[] = [];
 mediaRecorder.ondataavailable = (event: BlobEvent) => {
   if (event.data && event.data.size > 0) {
     chunks.push(event.data);
-    console.log('데이터 청크 수신:', event.data.size, 'bytes');
+    console.log("데이터 청크 수신:", event.data.size, "bytes");
   }
 };
 ```
@@ -229,10 +231,10 @@ const chunks: Blob[] = [];
 mediaRecorder.ondataavailable = (event: BlobEvent) => {
   if (event.data && event.data.size > 0) {
     chunks.push(event.data);
-    
+
     // 실시간으로 처리 (예: WebSocket으로 전송)
-    console.log(`청크 #${chunks.length} 수신:`, event.data.size, 'bytes');
-    
+    console.log(`청크 #${chunks.length} 수신:`, event.data.size, "bytes");
+
     // 여기서 WebSocket으로 전송할 수 있음 (Chapter 4에서 배움)
     // websocket.send(event.data);
   }
@@ -252,7 +254,7 @@ mediaRecorder.start(100);
 
 ```typescript
 mediaRecorder.stop();
-console.log('녹화 정지!', mediaRecorder.state); // "inactive"
+console.log("녹화 정지!", mediaRecorder.state); // "inactive"
 ```
 
 ### stop 이벤트
@@ -261,16 +263,16 @@ console.log('녹화 정지!', mediaRecorder.state); // "inactive"
 
 ```typescript
 mediaRecorder.onstop = () => {
-  console.log('녹화 완료!');
-  
+  console.log("녹화 완료!");
+
   // 모든 청크를 하나의 Blob으로 합치기
-  const finalBlob = new Blob(chunks, { 
-    type: mediaRecorder.mimeType 
+  const finalBlob = new Blob(chunks, {
+    type: mediaRecorder.mimeType,
   });
-  
-  console.log('최종 Blob 크기:', finalBlob.size, 'bytes');
-  console.log('MIME 타입:', finalBlob.type);
-  
+
+  console.log("최종 Blob 크기:", finalBlob.size, "bytes");
+  console.log("MIME 타입:", finalBlob.type);
+
   // 청크 배열 초기화
   chunks.length = 0;
 };
@@ -282,18 +284,18 @@ mediaRecorder.onstop = () => {
 async function recordAudio(duration: number): Promise<Blob> {
   // 1. 스트림 가져오기
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-  
+
   // 2. MediaRecorder 생성
   const mediaRecorder = new MediaRecorder(stream);
   const chunks: Blob[] = [];
-  
+
   // 3. 데이터 수집 준비
   mediaRecorder.ondataavailable = (event: BlobEvent) => {
     if (event.data && event.data.size > 0) {
       chunks.push(event.data);
     }
   };
-  
+
   // 4. 녹화 완료 처리
   const recordingPromise = new Promise<Blob>((resolve) => {
     mediaRecorder.onstop = () => {
@@ -301,24 +303,24 @@ async function recordAudio(duration: number): Promise<Blob> {
       resolve(blob);
     };
   });
-  
+
   // 5. 녹화 시작
   mediaRecorder.start();
-  
+
   // 6. 지정된 시간 후 정지
   setTimeout(() => {
     mediaRecorder.stop();
     // 스트림 정리
     stream.getTracks().forEach((track) => track.stop());
   }, duration);
-  
+
   // 7. 완료된 Blob 반환
   return recordingPromise;
 }
 
 // 사용 예제: 5초 녹음
 const audioBlob = await recordAudio(5000);
-console.log('녹음 완료:', audioBlob.size, 'bytes');
+console.log("녹음 완료:", audioBlob.size, "bytes");
 ```
 
 ---
@@ -332,22 +334,22 @@ console.log('녹음 완료:', audioBlob.size, 'bytes');
 ```typescript
 // 일시 정지
 mediaRecorder.pause();
-console.log('일시 정지:', mediaRecorder.state); // "paused"
+console.log("일시 정지:", mediaRecorder.state); // "paused"
 
 // 재개
 mediaRecorder.resume();
-console.log('재개:', mediaRecorder.state); // "recording"
+console.log("재개:", mediaRecorder.state); // "recording"
 ```
 
 ### pause/resume 이벤트
 
 ```typescript
 mediaRecorder.onpause = () => {
-  console.log('녹화가 일시 정지되었습니다.');
+  console.log("녹화가 일시 정지되었습니다.");
 };
 
 mediaRecorder.onresume = () => {
-  console.log('녹화가 재개되었습니다.');
+  console.log("녹화가 재개되었습니다.");
 };
 ```
 
@@ -357,10 +359,10 @@ mediaRecorder.onresume = () => {
 let isPaused = false;
 
 function togglePause(): void {
-  if (mediaRecorder.state === 'recording') {
+  if (mediaRecorder.state === "recording") {
     mediaRecorder.pause();
     isPaused = true;
-  } else if (mediaRecorder.state === 'paused') {
+  } else if (mediaRecorder.state === "paused") {
     mediaRecorder.resume();
     isPaused = false;
   }
@@ -394,10 +396,10 @@ function togglePause(): void {
 function getBestAudioMimeType(): string {
   // 우선순위에 따라 확인
   const preferredTypes = [
-    'audio/webm;codecs=opus',  // 최고 품질, 작은 파일 크기
-    'audio/webm',               // WebM 기본
-    'audio/ogg;codecs=opus',    // OGG Opus
-    'audio/mp4',                // MP4
+    "audio/webm;codecs=opus", // 최고 품질, 작은 파일 크기
+    "audio/webm", // WebM 기본
+    "audio/ogg;codecs=opus", // OGG Opus
+    "audio/mp4", // MP4
   ];
 
   for (const mimeType of preferredTypes) {
@@ -407,7 +409,7 @@ function getBestAudioMimeType(): string {
   }
 
   // 지원하는 형식이 없으면 기본값 사용
-  return '';
+  return "";
 }
 
 // 사용 예제
@@ -422,7 +424,7 @@ const mediaRecorder = new MediaRecorder(stream, options);
 
 ```typescript
 const options: MediaRecorderOptions = {
-  mimeType: 'audio/webm;codecs=opus',
+  mimeType: "audio/webm;codecs=opus",
   audioBitsPerSecond: 128000, // 128 kbps (고품질)
   // audioBitsPerSecond: 64000,  // 64 kbps (중품질)
   // audioBitsPerSecond: 32000,  // 32 kbps (저품질, 작은 파일)
@@ -432,6 +434,7 @@ const mediaRecorder = new MediaRecorder(stream, options);
 ```
 
 **비트레이트 선택 가이드**:
+
 - **128 kbps 이상**: 고품질 음악, 전문 녹음
 - **64-128 kbps**: 일반 음성 녹음, 화상 회의
 - **32-64 kbps**: 전화 품질, 실시간 전송 (대역폭 절약)
@@ -446,18 +449,18 @@ MediaRecorder에서 에러가 발생하면 `error` 이벤트가 발생합니다:
 
 ```typescript
 mediaRecorder.onerror = (event: MediaRecorderErrorEvent) => {
-  console.error('MediaRecorder 에러:', event.error);
-  
+  console.error("MediaRecorder 에러:", event.error);
+
   if (event.error instanceof DOMException) {
     switch (event.error.name) {
-      case 'InvalidStateError':
-        console.error('잘못된 상태에서 작업을 시도했습니다.');
+      case "InvalidStateError":
+        console.error("잘못된 상태에서 작업을 시도했습니다.");
         break;
-      case 'NotSupportedError':
-        console.error('지원하지 않는 형식입니다.');
+      case "NotSupportedError":
+        console.error("지원하지 않는 형식입니다.");
         break;
       default:
-        console.error('알 수 없는 에러:', event.error.message);
+        console.error("알 수 없는 에러:", event.error.message);
     }
   }
 };
@@ -496,31 +499,31 @@ class AudioRecorder {
     try {
       // 1. 스트림 가져오기
       this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      
+
       // 2. MIME 타입 결정
       const mimeType = this.options.mimeType || this.getBestMimeType();
-      
+
       // 3. MediaRecorder 생성
       const recorderOptions: MediaRecorderOptions = {
         mimeType,
         audioBitsPerSecond: this.options.audioBitsPerSecond,
       };
-      
+
       this.mediaRecorder = new MediaRecorder(this.stream, recorderOptions);
-      
+
       // 4. 이벤트 핸들러 등록
       this.setupEventHandlers();
-      
+
       // 5. 녹화 시작
       if (this.timeslice > 0) {
         this.mediaRecorder.start(this.timeslice);
       } else {
         this.mediaRecorder.start();
       }
-      
-      console.log('녹음 시작!');
+
+      console.log("녹음 시작!");
     } catch (error) {
-      console.error('녹음 시작 실패:', error);
+      console.error("녹음 시작 실패:", error);
       throw error;
     }
   }
@@ -528,12 +531,12 @@ class AudioRecorder {
   stop(): Promise<Blob> {
     return new Promise((resolve, reject) => {
       if (!this.mediaRecorder) {
-        reject(new Error('MediaRecorder가 초기화되지 않았습니다.'));
+        reject(new Error("MediaRecorder가 초기화되지 않았습니다."));
         return;
       }
 
-      if (this.mediaRecorder.state === 'inactive') {
-        reject(new Error('녹음이 시작되지 않았습니다.'));
+      if (this.mediaRecorder.state === "inactive") {
+        reject(new Error("녹음이 시작되지 않았습니다."));
         return;
       }
 
@@ -542,7 +545,7 @@ class AudioRecorder {
         const blob = new Blob(this.chunks, {
           type: this.mediaRecorder!.mimeType,
         });
-        
+
         this.cleanup();
         resolve(blob);
       };
@@ -552,13 +555,13 @@ class AudioRecorder {
   }
 
   pause(): void {
-    if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
+    if (this.mediaRecorder && this.mediaRecorder.state === "recording") {
       this.mediaRecorder.pause();
     }
   }
 
   resume(): void {
-    if (this.mediaRecorder && this.mediaRecorder.state === 'paused') {
+    if (this.mediaRecorder && this.mediaRecorder.state === "paused") {
       this.mediaRecorder.resume();
     }
   }
@@ -573,28 +576,30 @@ class AudioRecorder {
     this.mediaRecorder.ondataavailable = (event: BlobEvent) => {
       if (event.data && event.data.size > 0) {
         this.chunks.push(event.data);
-        console.log(`청크 수신: ${event.data.size} bytes (총 ${this.chunks.length}개)`);
+        console.log(
+          `청크 수신: ${event.data.size} bytes (총 ${this.chunks.length}개)`
+        );
       }
     };
 
     this.mediaRecorder.onerror = (event: MediaRecorderErrorEvent) => {
-      console.error('MediaRecorder 에러:', event.error);
+      console.error("MediaRecorder 에러:", event.error);
     };
 
     this.mediaRecorder.onpause = () => {
-      console.log('녹음 일시 정지');
+      console.log("녹음 일시 정지");
     };
 
     this.mediaRecorder.onresume = () => {
-      console.log('녹음 재개');
+      console.log("녹음 재개");
     };
   }
 
   private getBestMimeType(): string {
     const types = [
-      'audio/webm;codecs=opus',
-      'audio/webm',
-      'audio/ogg;codecs=opus',
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "audio/ogg;codecs=opus",
     ];
 
     for (const type of types) {
@@ -603,7 +608,7 @@ class AudioRecorder {
       }
     }
 
-    return ''; // 기본값 사용
+    return ""; // 기본값 사용
   }
 
   private cleanup(): void {
@@ -611,7 +616,7 @@ class AudioRecorder {
       this.stream.getTracks().forEach((track) => track.stop());
       this.stream = null;
     }
-    
+
     this.chunks = [];
     this.mediaRecorder = null;
   }
@@ -620,22 +625,22 @@ class AudioRecorder {
 // 사용 예제
 async function example(): Promise<void> {
   const recorder = new AudioRecorder({
-    mimeType: 'audio/webm;codecs=opus',
+    mimeType: "audio/webm;codecs=opus",
     audioBitsPerSecond: 128000,
     timeslice: 100, // 100ms마다 청크 수집
   });
 
   try {
     await recorder.start();
-    console.log('녹음 중...');
+    console.log("녹음 중...");
 
     // 5초 후 정지
     setTimeout(async () => {
       const blob = await recorder.stop();
-      console.log('녹음 완료:', blob.size, 'bytes');
+      console.log("녹음 완료:", blob.size, "bytes");
     }, 5000);
   } catch (error) {
-    console.error('에러:', error);
+    console.error("에러:", error);
   }
 }
 ```
@@ -670,4 +675,3 @@ async function example(): Promise<void> {
 3. 일시 정지/재개 기능이 있는 오디오 녹음기를 만드세요.
 
 답안은 `codes/02_MediaRecorder_example.ts` 파일을 참고하세요.
-

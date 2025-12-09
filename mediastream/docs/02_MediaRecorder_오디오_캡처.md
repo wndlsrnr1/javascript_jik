@@ -198,7 +198,7 @@ mediaRecorder.start(); // timeslice 없음
 
 > - start에 지정하면 데이터가 이용가능하다는 dataavailable 이벤트 발생
 
-> -
+> - start에 지정 하지 않으면 마지막에 stop() 호출시에 발생함
 
 ---
 

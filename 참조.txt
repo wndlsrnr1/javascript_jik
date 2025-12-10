@@ -1,0 +1,1828 @@
+MediaDevices: getUserMedia() method
+Baseline Widely available
+Secure context: This feature is available only in secure contexts (HTTPS), in some or all supporting browsers.
+
+The getUserMedia() method of the MediaDevices interface prompts the user for permission to use a media input which produces a MediaStream with tracks containing the requested types of media.
+
+That stream can include, for example, a video track (produced by either a hardware or virtual video source such as a camera, video recording device, screen sharing service, and so forth), an audio track (similarly, produced by a physical or virtual audio source like a microphone, A/D converter, or the like), and possibly other track types.
+
+It returns a Promise that resolves to a MediaStream object. If the user denies permission, or matching media is not available, then the promise is rejected with NotAllowedError or NotFoundError DOMException respectively.
+
+Note: It's possible for the returned promise to neither resolve nor reject, as the user is not required to make a choice at all and may ignore the request.
+
+In this article
+Syntax
+Privacy and security
+Examples
+Specifications
+Browser compatibility
+See also
+Syntax
+js
+
+Copy
+getUserMedia(constraints)
+Parameters
+constraints
+An object specifying the types of media to request, along with any requirements for each type.
+
+The constraints parameter is an object with two members: video and audio, describing the media types requested. Either or both must be specified. If the browser cannot find all media tracks with the specified types that meet the constraints given, then the returned promise is rejected with NotFoundError DOMException.
+
+For both video and audio, its value is either a boolean or an object. The default value is false.
+
+If true is specified for a media type, the resulting stream is required to have that type of track in it. If one cannot be included for any reason, the returned promise will reject.
+If false is specified for a media type, the resulting stream must not have that type of track, or the returned promise will reject. Because both video and audio default to false, if the constraints object contains neither property or if it's not present at all, the returned promise will always reject.
+If an object is specified for a media type, the object is read as a MediaTrackConstraints dictionary.
+Return value
+A Promise whose fulfillment handler receives a MediaStream object when the requested media has successfully been obtained.
+
+Exceptions
+AbortError DOMException
+Although the user and operating system both granted access to the hardware device, and no hardware issues occurred that would cause a NotReadableError DOMException, throw if some problem occurred which prevented the device from being used.
+
+InvalidStateError DOMException
+Thrown if current document is not fully active.
+
+NotAllowedError DOMException
+Thrown if one or more of the requested source devices cannot be used at this time. This will happen if the browsing context is insecure (that is, the page was loaded using HTTP rather than HTTPS). It also happens if the user has specified that the current browsing instance is not permitted access to the device, the user has denied access for the current session, or the user has denied all access to user media devices globally. On browsers that support managing media permissions with Permissions Policy, this error is returned if Permissions Policy is not configured to allow access to the input source(s).
+
+Note: Older versions of the specification used SecurityError for this instead; SecurityError has taken on a new meaning.
+
+NotFoundError DOMException
+Thrown if no media tracks of the type specified were found that satisfy the given constraints.
+
+NotReadableError DOMException
+Thrown if, although the user granted permission to use the matching devices, a hardware error occurred at the operating system, browser, or Web page level which prevented access to the device.
+
+OverconstrainedError DOMException
+Thrown if the specified constraints resulted in no candidate devices which met the criteria requested. The error is an object of type OverconstrainedError, and has a constraint property whose string value is the name of a constraint which was impossible to meet, and a message property containing a human-readable string explaining the problem.
+
+Note: Because this error can occur even when the user has not yet granted permission to use the underlying device, it can potentially be used as a fingerprinting surface.
+
+SecurityError DOMException
+Thrown if user media support is disabled on the Document on which getUserMedia() was called. The mechanism by which user media support is enabled and disabled is left up to the individual user agent.
+
+TypeError
+Thrown if the list of constraints specified is empty, or has all constraints set to false. This can also happen if you try to call getUserMedia() in an insecure context, since navigator.mediaDevices is undefined in an insecure context.
+
+Privacy and security
+As an API that may involve significant privacy concerns, getUserMedia()'s specification lays out a wide array of privacy and security requirements that browsers are obligated to meet.
+
+getUserMedia() is a powerful feature that can only be used in secure contexts; in insecure contexts, navigator.mediaDevices is undefined, preventing access to getUserMedia(). A secure context is, in short, a page loaded using HTTPS or the file:/// URL scheme, or a page loaded from localhost.
+
+In addition, user permission is always required to access the user's audio and video inputs. Only a window's top-level document context for a valid origin can even request permission to use getUserMedia(), unless the top-level context expressly grants permission for a given <iframe> to do so using Permissions Policy. Otherwise, the user will never even be asked for permission to use the input devices.
+
+For additional details on these requirements and rules, how they are reflected in the context in which your code is running, and about how browsers manage user privacy and security issues, read on.
+
+User privacy
+As an API that may involve significant privacy concerns, getUserMedia() is held by the specification to very specific requirements for user notification and permission management. First, getUserMedia() must always get user permission before opening any media gathering input such as a webcam or microphone. Browsers may offer a once-per-domain permission feature, but they must ask at least the first time, and the user must specifically grant ongoing permission if they choose to do so.
+
+Of equal importance are the rules around notification. Browsers are required to display an indicator that shows that a camera or microphone is in use, above and beyond any hardware indicator that may exist. They must also show an indicator that permission has been granted to use a device for input, even if the device is not actively recording at the moment.
+
+For example in Firefox, the URL bar displays a pulsing red icon to indicate that recording is underway. The icon is gray if the permission is in place but recording is not currently underway. The device's physical light is used to indicate whether or not recording is currently active. If you've muted your camera (so-called "facemuting"), your camera's activity light goes out to indicate that the camera is not actively recording you, without discarding the permission to resume using the camera once muting is over.
+
+Security
+There are a number of ways security management and controls in a user agent can cause getUserMedia() to return a security-related error.
+
+Permissions Policy
+The two Permissions Policy directives that apply to getUserMedia() are camera and microphone.
+
+For example, this HTTP header will enable use of a camera by the document and any embedded <iframe> elements that are loaded from the same origin:
+
+http
+
+Copy
+Permissions-Policy: camera=(self)
+This will request access to the microphone for the current origin and the specific origin https://developer.mozilla.org:
+
+http
+
+Copy
+Permissions-Policy: microphone=(self "https://developer.mozilla.org")
+If you're using getUserMedia() within an <iframe>, you can request permission just for that frame, which is clearly more secure than requesting a more general permission. Here, indicate we need the ability to use both camera and microphone:
+
+html
+
+Copy
+<iframe src="https://mycode.example.net/etc" allow="camera; microphone">
+</iframe>
+Encryption based security
+The getUserMedia() method is only available in secure contexts. A secure context is one the browser is reasonably confident contains a document which was loaded securely, using HTTPS/TLS, and has limited exposure to insecure contexts. If a document isn't loaded in a secure context, the navigator.mediaDevices property is undefined, making access to getUserMedia() impossible.
+
+Attempting to access getUserMedia() in this situation will result in a TypeError.
+
+Document source security
+Because of the obvious security concern associated with getUserMedia() if used unexpectedly or without security being carefully managed, it can only be used in secure contexts. There are a number of insecure ways to load a document that might, in turn, attempt to call getUserMedia(). The following are examples of situations in which getUserMedia() is not permitted to be called:
+
+A document loaded into a sandboxed <iframe> element cannot call getUserMedia() unless the <iframe> has its sandbox attribute set to allow-same-origin.
+A document loaded using a data:// or blob:// URL which has no origin (such as when one of these URLs is typed by the user into the address bar) cannot call getUserMedia(). These kinds of URLs loaded from JavaScript code inherit the script's permissions.
+Any other situation in which there is no origin, such as when the srcdoc attribute is used to specify the contents of a frame.
+Examples
+Using getUserMedia()
+Generally, you will access the MediaDevices singleton object using navigator.mediaDevices, like this:
+
+js
+
+Copy
+async function getMedia(constraints) {
+  let stream = null;
+
+  try {
+    stream = await navigator.mediaDevices.getUserMedia(constraints);
+    /* use the stream */
+  } catch (err) {
+    /* handle the error */
+  }
+}
+Similarly, using the raw promises directly, the code looks like this:
+
+js
+
+Copy
+navigator.mediaDevices
+  .getUserMedia(constraints)
+  .then((stream) => {
+    /* use the stream */
+  })
+  .catch((err) => {
+    /* handle the error */
+  });
+Note: If the current document isn't loaded securely, navigator.mediaDevices will be undefined, and you cannot use getUserMedia(). See Security for more information on this and other security issues related to using getUserMedia().
+
+Below are some examples of the constraints parameter.
+
+The following requests both audio and video without any specific requirements:
+
+js
+
+Copy
+getUserMedia({
+  audio: true,
+  video: true,
+});
+While information about a user's cameras and microphones are inaccessible for privacy reasons, an application can request the camera and microphone capabilities it needs and wants, using additional constraints. The following expresses a preference for 1280x720 camera resolution:
+
+js
+
+Copy
+getUserMedia({
+  audio: true,
+  video: { width: 1280, height: 720 },
+});
+The browser will try to honor the constraints, and will return a matching track if supported by the underlying hardware. If not supported, the browser may attempt to crop and downscale a higher resolution stream from the underlying hardware in order to match the constraint (and might also reduce the frame rate if that was constrained). This behavior can be forced by setting the resizeMode constraint to crop-and-scale (or disabled by setting it to none):
+
+js
+
+Copy
+getUserMedia({
+  audio: true,
+  video: { width: 1280, height: 720, resizeMode: "crop-and-scale" },
+});
+The browser may return another resolution if an exact match is not available and the source is not to be scaled.
+
+To require a capability and fail if it is not available, use the keywords min, max, or exact (a.k.a. min === max). The following demands a minimum resolution of 1280x720:
+
+js
+
+Copy
+getUserMedia({
+  audio: true,
+  video: {
+    width: { min: 1280 },
+    height: { min: 720 },
+  },
+});
+If no camera exists with this resolution or higher, then the returned promise will be rejected with OverconstrainedError, and the user will not be prompted.
+
+The reason for the difference in behavior is that the keywords min, max, and exact are inherently mandatory — whereas plain values and a keyword called ideal are not. Here's a full example:
+
+js
+
+Copy
+getUserMedia({
+  audio: true,
+  video: {
+    width: { min: 1024, ideal: 1280, max: 1920 },
+    height: { min: 576, ideal: 720, max: 1080 },
+  },
+});
+An ideal value, when used, has gravity — which means that the browser will try to find the setting (and camera, if you have more than one), with the smallest fitness distance from the ideal values given.
+
+Plain values are inherently ideal, which means that the first of our resolution examples above could have been written like this:
+
+js
+
+Copy
+getUserMedia({
+  audio: true,
+  video: {
+    width: { ideal: 1280 },
+    height: { ideal: 720 },
+  },
+});
+Not all constraints are numbers. For example, on mobile devices, the following will prefer the front camera (if one is available) over the rear one:
+
+js
+
+Copy
+getUserMedia({
+  audio: true,
+  video: { facingMode: "user" },
+});
+To require the rear camera, use:
+
+js
+
+Copy
+getUserMedia({
+  audio: true,
+  video: {
+    facingMode: { exact: "environment" },
+  },
+});
+Another non-number constraint is the deviceId constraint. If you have a deviceId from mediaDevices.enumerateDevices(), you can use it to request a specific device:
+
+js
+
+Copy
+getUserMedia({
+  video: {
+    deviceId: myPreferredCameraDeviceId,
+  },
+});
+The above will return the camera you requested, or a different camera if that specific camera is no longer available. Browsers' internally-available information, such as user preference, may also override your request. For example, when the user was asked for camera permissions, the camera they selected may take priority over the one you requested. Again, to require the specific camera, you would use:
+
+js
+
+Copy
+getUserMedia({
+  video: {
+    deviceId: {
+      exact: myExactCameraOrBustDeviceId,
+    },
+  },
+});
+Width and height
+This example gives a preference for camera resolution, and assigns the resulting MediaStream object to a video element.
+
+js
+
+Copy
+// Prefer camera resolution nearest to 1280x720.
+const constraints = {
+  audio: true,
+  video: { width: 1280, height: 720 },
+};
+
+navigator.mediaDevices
+  .getUserMedia(constraints)
+  .then((mediaStream) => {
+    const video = document.querySelector("video");
+    video.srcObject = mediaStream;
+    video.onloadedmetadata = () => {
+      video.play();
+    };
+  })
+  .catch((err) => {
+    // always check for errors at the end.
+    console.error(`${err.name}: ${err.message}`);
+  });
+Frame rate
+Lower frame-rates may be desirable in some cases, like WebRTC transmissions with bandwidth restrictions.
+
+js
+
+Copy
+const constraints = {
+  video: { frameRate: { ideal: 10, max: 15 } },
+};
+Front and back camera
+On mobile phones.
+
+js
+
+Copy
+let front = false;
+document.getElementById("flip-button").onclick = () => {
+  front = !front;
+};
+
+const constraints = {
+  video: { facingMode: front ? "user" : "environment" },
+};
+Note: In certain cases, it may be necessary to release the current camera facing mode before you can switch to a different one. To ensure the camera switch, it is advisable to free up the media resources by invoking the "stop()" method on the track before requesting a different facing mode.
+
+Specifications
+Specification
+Media Capture and Streams
+# dom-mediadevices-getusermedia
+Browser compatibility
+Report problems with this compatibility data • View data on GitHub 
+desktop
+mobile
+Chrome
+Edge
+Firefox
+Opera
+Safari
+Chrome Android
+Firefox for Android
+Opera Android
+Safari on iOS
+Samsung Internet
+WebView Android
+WebView on iOS
+getUserMedia
+
+53
+footnote
+
+12
+
+36
+footnote
+
+40
+footnote
+
+11
+
+53
+footnote
+
+36
+footnote
+
+41
+footnote
+
+11
+
+6
+
+53
+
+11
+constraints.resizeMode parameter
+
+72
+
+79
+
+144
+
+60
+
+No
+
+72
+
+144
+
+51
+
+No
+
+11
+
+72
+
+No
+Secure context required
+
+53
+
+79
+
+68
+
+40
+
+11
+
+53
+
+68
+
+41
+
+11
+
+6
+
+53
+
+11
+Legend
+Tip: you can click/tap on a cell for more information.
+
+Full support
+Full support
+No support
+No support
+See implementation notes.
+See also
+The older Navigator.getUserMedia() legacy API
+MediaDevices.enumerateDevices(): Listing available media devices
+WebRTC API
+Media Capture and Streams API
+Screen Capture API: Capturing screen contents as a MediaStream
+MediaDevices.getDisplayMedia(): Getting a stream containing screen contents
+Taking webcam photos: A tutorial on using getUserMedia() to take still photos rather than video
+
+
+
+MediaStream Recording API 사용하기
+Baseline Widely available *
+MediaStream Recording API는 오디오 및/또는 비디오 스트림을 손쉽게 녹화할 수 있도록 해줍니다. navigator.mediaDevices.getUserMedia()와 함께 사용하면 사용자의 입력 장치에서 바로 녹화하여, 그 결과물을 웹 애플리케이션에서 즉시 활용할 수 있습니다.
+
+오디오와 비디오는 개별적으로 또는 함께 녹화할 수 있습니다. 이 글은 해당 API를 제공하는 MediaRecorder 인터페이스의 사용법에 대한 기본 가이드를 제공하는 것을 목적으로 합니다.
+
+In this article
+예제 애플리케이션: 웹 음성 녹음기
+CSS 유용한 기능
+기본 앱 설정
+미디어 스트림 캡처
+Blob 가져오기 및 활용
+명세서
+브라우저 호환성
+같이 보기
+예제 애플리케이션: 웹 음성 녹음기
+웹 음성 녹음기 샘플 앱의 이미지: 사인파 소리 시각화, 녹음 및 정지 버튼, 그리고 녹음된 트랙을 재생할 수 있는 오디오 주크박스
+
+MediaStream Recording API의 기본 사용법을 시연하기 위해, 웹 기반의 음성 녹음기를 제작했습니다. 이 도구는 오디오 일부를 녹음한 후 재생할 수 있으며, Web Audio API를 사용해 기기의 사운드 입력을 시각화합니다. 이번 글에서는 녹음 및 재생 기능에 초점을 맞출 예정입니다.
+
+이 데모를 실시간으로 확인하거나 GitHub에서 소스 코드를 받아볼 수 있습니다.
+
+CSS 유용한 기능
+이 앱의 HTML은 매우 단순해서 여기서 자세히 다루지 않겠습니다. 하지만 언급할 만한 흥미로운 CSS 요소가 몇 가지 있으므로 아래에서 다룰 예정입니다. CSS에 관심이 없고 바로 JavaScript로 넘어가고 싶다면 기본 앱 설정 섹션으로 건너뛰세요.
+
+calc()를 사용하여 기기 높이에 상관없이 인터페이스를 뷰포트에 맞게 유지하기
+calc() 함수는 처음에는 별다른 것 없어 보이지만, "와, 이 기능이 왜 지금까지 없었을까? CSS2 레이아웃이 왜 이렇게 불편했을까?"라는 생각을 하게 만드는 유용한 도구 중 하나입니다. 이 함수는 서로 다른 단위를 혼합하여 CSS 단위의 계산된 값을 산출할 수 있도록 도와줍니다.
+
+예를 들어, 웹 음성 녹음기에서는 세 개의 주요 UI 영역이 수직으로 배치되어 있습니다. 우리는 처음 두 영역(헤더와 컨트롤)에 고정된 높이를 부여하고자 했습니다.
+
+css
+
+Copy
+header {
+  height: 70px;
+}
+
+.main-controls {
+  padding-bottom: 0.7rem;
+  height: 170px;
+}
+하지만 기기 높이에 상관없이 남은 공간을 모두 차지하도록, 녹음 샘플 재생 영역인 세 번째 부분을 구성하고 싶었습니다. 이 경우 Flexbox를 사용할 수도 있겠지만, 이렇게 간단한 레이아웃에는 다소 과한 방법일 수 있습니다. 대신, 세 번째 컨테이너의 높이를 상위 요소의 전체 높이에서 다른 두 영역의 높이와 패딩 값을 뺀 값으로 설정하여 문제를 해결했습니다.
+
+css
+
+Copy
+.sound-clips {
+  box-shadow: inset 0 3px 4px rgb(0 0 0 / 70%);
+  background-color: rgb(0 0 0 / 10%);
+  height: calc(100% - 240px - 0.7rem);
+  overflow: scroll;
+}
+체크박스 해킹을 이용한 표시/숨기기
+이 기법은 이미 꽤 잘 문서화되어 있지만, 체크박스의 <label>을 클릭하면 체크/언체크 상태가 전환된다는 점을 활용한 체크박스 해킹을 언급해 보고자 합니다. 웹 음성 녹음기에서는 오른쪽 상단의 물음표 아이콘을 클릭하면 정보 화면이 표시되거나 숨겨지는데, 이때 이 기법이 사용됩니다. 우선, <label>에 원하는 스타일을 적용하여 다른 요소들보다 항상 위에 표시되도록 z-index를 충분히 높게 설정해, 포커스 및 클릭이 가능하게 합니다.
+
+css
+
+Copy
+label {
+  font-family: "NotoColorEmoji";
+  font-size: 3rem;
+  position: absolute;
+  top: 2px;
+  right: 3px;
+  z-index: 5;
+  cursor: pointer;
+}
+그런 다음 실제 체크박스는 UI를 어수선하게 만들지 않기 위해 숨깁니다.
+
+css
+
+Copy
+input[type="checkbox"] {
+  position: absolute;
+  top: -100px;
+}
+다음으로, <aside> 요소로 감싼 정보 화면을 원하는 스타일로 꾸미고, 메인 UI에 영향을 주지 않도록 레이아웃 흐름에서 벗어나도록 고정 위치를 부여합니다. 기본 위치로 이동시키기 위해 변환(transform)을 적용하고, 부드럽게 표시/숨김 효과를 주기 위해 전환(transition)을 설정합니다.
+
+css
+
+Copy
+aside {
+  position: fixed;
+  top: 0;
+  left: 0;
+  text-shadow: 1px 1px 1px black;
+  width: 100%;
+  height: 100%;
+  transform: translateX(100%);
+  transition: 0.6s all;
+  background-color: #999;
+  background-image: linear-gradient(
+    to top right,
+    rgb(0 0 0 / 0%),
+    rgb(0 0 0 / 50%)
+  );
+}
+마지막으로, 체크박스가 선택되었을 때 (label을 클릭하거나 포커스했을 때), 인접한 <aside> 요소의 수평 이동 값이 변경되어 부드럽게 화면에 나타나도록 하는 규칙을 작성합니다.
+
+css
+
+Copy
+input[type="checkbox"]:checked ~ aside {
+  transform: translateX(0);
+}
+기본 앱 설정
+캡처할 미디어 스트림을 얻기 위해 getUserMedia()를 사용합니다. 이후 MediaStream Recording API를 활용하여 스트림을 녹화하고, 녹화된 각 스니펫을 생성된 <audio> 요소의 소스로 출력해 재생할 수 있도록 합니다.
+
+녹음 및 중지 버튼과, 생성된 오디오 플레이어들을 담을 <article> 요소를 위한 변수를 선언합니다.
+
+js
+
+Copy
+const record = document.querySelector(".record");
+const stop = document.querySelector(".stop");
+const soundClips = document.querySelector(".sound-clips");
+마지막으로, 이 섹션의 기본 getUserMedia 구조를 설정합니다.
+
+js
+
+Copy
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  console.log("getUserMedia supported.");
+  navigator.mediaDevices
+    .getUserMedia(
+      // 제약 조건 - 이 앱은 오디오만 필요함
+      {
+        audio: true,
+      },
+    )
+
+    // 성공 콜백
+    .then((stream) => {})
+
+    // 오류 콜백
+    .catch((err) => {
+      console.error(`The following getUserMedia error occurred: ${err}`);
+    });
+} else {
+  console.log("getUserMedia not supported on your browser!");
+}
+전체 코드는 다른 작업을 실행하기 전 getUserMedia 지원 여부를 확인하는 테스트로 감싸져 있습니다. 다음으로 getUserMedia()를 호출하고 그 내부를 정의합니다.
+
+제약 조건: 음성 녹음기에서는 오직 오디오만 캡처합니다.
+성공 콜백: getUserMedia 호출이 성공적으로 완료되면 실행되는 코드입니다.
+오류/실패 콜백: getUserMedia 호출이 어떤 이유로 실패할 때 실행되는 코드입니다.
+참고 : 아래의 모든 코드는 getUserMedia 성공 콜백 내부에 위치합니다.
+
+미디어 스트림 캡처
+getUserMedia가 미디어 스트림을 성공적으로 생성하면, MediaRecorder() 생성자를 사용해 새 MediaRecorder 인스턴스를 만들고 스트림을 직접 전달합니다. 이것이 MediaStream Recording API를 사용하는 진입점이 되며, 스트림은 이제 브라우저의 기본 인코딩 형식으로 Blob에 캡처될 준비가 된 것입니다.
+
+js
+
+Copy
+const mediaRecorder = new MediaRecorder(stream);
+MediaRecorder 인터페이스에는 미디어 스트림 녹화를 제어할 수 있는 다양한 메서드들이 있으며, 웹 음성 녹음기에서는 이 중 두 가지 메서드와 몇 가지 이벤트만을 사용합니다. 우선, 녹음 버튼을 누르면 MediaRecorder.start()를 호출하여 스트림의 녹화를 시작합니다.
+
+js
+
+Copy
+record.onclick = () => {
+  mediaRecorder.start();
+  console.log(mediaRecorder.state);
+  console.log("recorder started");
+  record.style.background = "red";
+  record.style.color = "black";
+};
+MediaRecorder가 녹화 중일 때, MediaRecorder.state 속성은 "recording" 값을 반환합니다.
+
+녹화가 진행됨에 따라 오디오 데이터를 수집해야 하므로, 이를 위해 ondataavailable 이벤트 핸들러를 등록합니다.
+
+js
+
+Copy
+let chunks = [];
+
+mediaRecorder.ondataavailable = (e) => {
+  chunks.push(e.data);
+};
+참고 : 브라우저는 필요에 따라 dataavailable 이벤트를 발생시키지만, 필요하다면 start() 메서드를 호출할 때 시간 간격(timeslice) 값을 포함해(예: start(10000)) 이 간격을 제어할 수 있으며, 원하는 시점에 MediaRecorder.requestData()를 호출해 이벤트를 발생시킬 수도 있습니다.
+
+마지막으로, 정지 버튼을 누르면 MediaRecorder.stop() 메서드를 사용하여 녹화를 종료하고, 애플리케이션의 다른 부분에서 사용할 준비가 된 Blob을 완성합니다.
+
+js
+
+Copy
+stop.onclick = () => {
+  mediaRecorder.stop();
+  console.log(mediaRecorder.state);
+  console.log("recorder stopped");
+  record.style.background = "";
+  record.style.color = "";
+};
+미디어 스트림이 종료될 때 녹화가 자연스럽게 중단될 수도 있습니다. (예: 노래 트랙을 녹음 중에 트랙이 끝나거나, 사용자가 마이크 공유를 중단하는 경우 등)
+
+Blob 가져오기 및 활용
+녹화가 중지되면 state 속성은 "inactive" 값을 반환하며, stop 이벤트가 발생합니다. 이때, onstop 이벤트 핸들러를 등록하여 지금까지 수신한 모든 청크로부터 최종적인 blob을 완성합니다.
+
+js
+
+Copy
+mediaRecorder.onstop = (e) => {
+  console.log("recorder stopped");
+
+  const clipName = prompt("Enter a name for your sound clip");
+
+  const clipContainer = document.createElement("article");
+  const clipLabel = document.createElement("p");
+  const audio = document.createElement("audio");
+  const deleteButton = document.createElement("button");
+
+  clipContainer.classList.add("clip");
+  audio.setAttribute("controls", "");
+  deleteButton.textContent = "Delete";
+  clipLabel.textContent = clipName;
+
+  clipContainer.appendChild(audio);
+  clipContainer.appendChild(clipLabel);
+  clipContainer.appendChild(deleteButton);
+  soundClips.appendChild(clipContainer);
+
+  const blob = new Blob(chunks, { type: "audio/ogg; codecs=opus" });
+  chunks = [];
+  const audioURL = window.URL.createObjectURL(blob);
+  audio.src = audioURL;
+
+  deleteButton.onclick = (e) => {
+    let evtTgt = e.target;
+    evtTgt.parentNode.parentNode.removeChild(evtTgt.parentNode);
+  };
+};
+위의 코드를 살펴보며 어떤 동작이 일어나는지 확인해 봅시다.
+
+먼저, 사용자에게 클립의 이름을 묻는 프롬프트를 표시합니다.
+
+다음으로, <article> 요소인 클립 컨테이너에 아래와 같은 HTML 구조를 생성하여 삽입합니다.
+
+html
+
+Copy
+<article class="clip">
+  <audio controls></audio>
+  <p>your clip name</p>
+  <button>Delete</button>
+</article>
+그 후, 녹음된 오디오 청크들을 결합해 하나의 Blob을 만들고, window.URL.createObjectURL(blob)를 사용해 이를 가리키는 오브젝트 URL을 생성합니다. 그다음, <audio> 요소의 src 속성에 이 오브젝트 URL을 할당하여, 오디오 플레이어의 재생 버튼을 누르면 해당 Blob이 재생되도록 합니다.
+
+마지막으로, 삭제 버튼에 onclick 핸들러를 설정하여 전체 클립 HTML 구조를 삭제하는 함수를 실행합니다.
+
+명세서
+Specification
+MediaStream Recording
+# mediarecorder-api
+브라우저 호환성
+Report problems with this compatibility data • View data on GitHub 
+desktop
+mobile
+Chrome
+Edge
+Firefox
+Opera
+Safari
+Chrome Android
+Firefox for Android
+Opera Android
+Safari on iOS
+Samsung Internet
+WebView Android
+WebView on iOS
+MediaRecorder
+
+47
+
+79
+
+25
+footnote
+
+36
+
+14.1
+
+47
+
+25
+footnote
+
+36
+
+14
+
+5
+
+47
+
+14
+MediaRecorder() constructor
+
+47
+
+79
+
+25
+
+36
+
+14.1
+
+47
+
+25
+
+36
+
+14
+
+5
+
+47
+
+14
+options parameter
+
+49
+
+79
+
+43
+
+36
+
+14.1
+
+49
+
+43
+
+36
+
+14
+
+5
+
+49
+
+14
+audioBitrateMode
+Experimental
+
+89
+
+89
+
+No
+
+75
+
+No
+
+89
+
+No
+
+63
+
+No
+
+15
+
+89
+
+No
+audioBitsPerSecond
+
+49
+
+79
+
+71
+
+36
+
+14.1
+
+49
+
+79
+
+36
+
+14.5
+
+5
+
+49
+
+14.5
+dataavailable event
+
+49
+
+79
+
+25
+
+36
+
+14.1
+
+49
+
+25
+
+36
+
+14
+
+5
+
+49
+
+14
+error event
+
+49
+
+79
+
+25
+
+36
+
+14.1
+
+49
+
+25
+
+36
+
+14
+
+5
+
+49
+
+14
+isTypeSupported() static method
+
+47
+
+79
+
+25
+
+36
+
+14.1
+
+47
+
+25
+
+36
+
+14
+
+5
+
+47
+
+14
+mimeType
+
+49
+more
+
+79
+
+25
+footnote
+
+36
+
+14.1
+
+49
+more
+
+25
+
+36
+
+14
+
+5
+
+49
+more
+
+14
+pause
+
+49
+
+79
+
+25
+
+36
+
+14.1
+
+49
+
+25
+
+36
+
+14.5
+
+5
+
+49
+
+14.5
+pause event
+
+49
+
+79
+
+65
+
+36
+
+14.1
+
+49
+
+65
+
+36
+
+14.5
+
+5
+
+49
+
+14.5
+requestData
+
+49
+
+79
+
+25
+
+36
+
+14.1
+
+49
+
+25
+
+36
+
+14
+
+5
+
+49
+
+14
+resume
+
+49
+
+79
+
+25
+
+36
+
+14.1
+
+49
+
+25
+
+36
+
+14.5
+
+5
+
+49
+
+14.5
+resume event
+
+49
+
+79
+
+65
+
+36
+
+14.1
+
+49
+
+65
+
+36
+
+14.5
+
+5
+
+49
+
+14.5
+start
+
+47
+
+79
+
+25
+
+36
+
+14.1
+
+47
+
+25
+
+36
+
+14
+
+5
+
+47
+
+14
+start event
+
+49
+
+79
+
+25
+
+36
+
+14.1
+
+49
+
+25
+
+36
+
+14
+
+5
+
+49
+
+14
+state
+
+49
+more
+
+79
+
+25
+
+36
+
+14.1
+
+49
+more
+
+25
+
+36
+
+14
+
+5
+
+49
+more
+
+14
+stop
+
+49
+
+79
+
+25
+
+36
+
+14.1
+
+49
+
+25
+
+36
+
+14
+
+5
+
+49
+
+14
+stop event
+
+49
+
+79
+
+25
+
+36
+
+14.1
+
+49
+
+25
+
+36
+
+14
+
+5
+
+49
+
+14
+stream
+
+49
+more
+
+79
+
+25
+
+36
+
+14.1
+
+49
+more
+
+25
+
+36
+
+14
+
+5
+
+49
+
+14
+videoBitsPerSecond
+
+49
+
+79
+
+71
+
+36
+
+14.1
+
+49
+
+79
+
+36
+
+14.5
+
+5
+
+49
+
+14.5
+Legend
+Tip: you can click/tap on a cell for more information.
+
+Full support
+Full support
+Partial support
+Partial support
+No support
+No support
+⁨Experimental⁩. Expect behavior to change in the future.
+See implementation notes.
+Has more compatibility info.
+같이 보기
+Media Capture and Streams API 랜딩 페이지
+MediaDevices.getUserMedia()
+Help improve MDN
+
+Was this page helpful to you?
+
+Yes
+
+No
+Learn how to contribute
+This page was last modified on ⁨2025년 3월 23일⁩ by MDN contributors.
+
+View this page on GitHub • Report a problem with this content
+MediaDevices: selectAudioOutput() method
+Secure context: This feature is available only in secure contexts (HTTPS), in some or all supporting browsers.
+
+Experimental: This is an experimental technology
+Check the Browser compatibility table carefully before using this in production.
+
+The selectAudioOutput() method of the MediaDevices interface prompts the user to select an audio output device, such as a speaker or headset. If the user selects a device, the method grants user permission to use the selected device as an audio output sink.
+
+Following selection, if the device is available it can be enumerated using MediaDevices.enumerateDevices() and set as the audio output sink using HTMLMediaElement.setSinkId().
+
+On success, the returned Promise is resolved with a MediaDeviceInfo describing the selected device.
+
+In this article
+Syntax
+Security requirements
+Examples
+Specifications
+Browser compatibility
+See also
+Syntax
+js
+
+Copy
+selectAudioOutput()
+selectAudioOutput(options)
+Parameters
+options Optional
+An object that configures what device(s) may be offered in the user prompt.
+
+deviceId Optional
+A string representing the ID of a single previously exposed/permitted device. If not set, a prompt with all available audio output devices will be displayed.
+
+The option is intended for applications that want to store a device id so that the same device can be used by default in future sessions. Note that the method may return a new ID for the same device, and that persisted ids must be passed through selectAudioOutput() successfully before they will work with setSinkId().
+
+Note: A user agent may choose to skip prompting the user if a specified non-null id was previously exposed to the user by selectAudioOutput() in an earlier session. In this case the user agent may simply resolve with this device id, or a new id for the same device if it has changed. If permission for the specified device was previously granted but has since been revoked, the user-agent might display all allowed devices, highlighting the one with the specified ID.
+
+Return value
+A Promise that is fulfilled with a MediaDeviceInfo object that describes the audio output device selected by the user.
+
+Exceptions
+NotAllowedError DOMException
+Returned if a speaker-selection Permissions Policy is used to block use of audio outputs (in addition the popup for selecting an audio output won't be displayed), or the user closed the selection prompt without choosing a device.
+
+NotFoundError DOMException
+Returned if there are no available audio output devices.
+
+InvalidStateError DOMException
+Returned if there hasn't been a transient activation (you must trigger it from some kind of UI event).
+
+Security requirements
+Access to the API is subject to the following constraints:
+
+The method must be called in a secure context.
+Transient user activation is required. The user has to interact with the page or a UI element for this feature to work.
+Access may be gated by the speaker-selection HTTP Permission Policy.
+The permission status can be queried using the Permissions API method navigator.permissions.query(), passing a permission descriptor with the speaker-selection permission.
+
+Examples
+Here's an example of using selectAudioOutput(), within a function that is triggered by a button click. It outputs the selected device IDs and labels (if available) or an error message.
+
+js
+
+Copy
+document.querySelector("#myButton").addEventListener("click", () => {
+  if (!navigator.mediaDevices.selectAudioOutput) {
+    console.log("selectAudioOutput() not supported.");
+    return;
+  }
+
+  // Display prompt and log selected device or error
+  navigator.mediaDevices
+    .selectAudioOutput()
+    .then((device) => {
+      console.log(`${device.kind}: ${device.label} id = ${device.deviceId}`);
+    })
+    .catch((err) => {
+      console.error(`${err.name}: ${err.message}`);
+    });
+});
+On selection of an output this might produce:
+
+bash
+
+Copy
+audiooutput: Realtek Digital Output (Realtek(R) Audio) id = 0wE6fURSZ20H0N2NbxqgowQJLWbwo+5ablCVVJwRM3k=
+Specifications
+Specification
+Audio Output Devices API
+# dom-mediadevices-selectaudiooutput
+This page was translated from English by the community. Learn more and join the MDN Web Docs community.
+
+View in English
+ 
+Always switch to English
+
+미디어 요소 녹화하기
+MediaStream Recording API 사용하기 문서에서는 하드웨어 장치로 생성된 MediaStream(즉, navigator.mediaDevices.getUserMedia()로 반환된 스트림)을 캡처하기 위해 MediaRecorder 인터페이스를 사용하는 방법을 다룹니다. 한편, 녹화할 MediaStream의 소스로 HTML 미디어 요소(예: <audio> 또는 <video>)를 사용할 수도 있습니다. 이 문서에서는 그런 예제를 살펴봅니다.
+
+In this article
+미디어 요소 녹화 예제
+같이 보기
+bunny.net
+Stay online. Hop on bunny today
+Resilient infrastructure that keeps your site up. Especially when traffic floods in.
+Start for FREE
+Ad
+미디어 요소 녹화 예제
+HTML
+먼저 HTML의 주요 부분을 살펴보겠습니다. 이 외에도 약간의 코드가 더 있지만, 이는 앱의 핵심 동작과는 관계없는 정보 제공 용도에 불과합니다.
+
+html
+
+Copy
+Play
+<div class="left">
+  <div id="startButton" class="button">Start Recording</div>
+  <h2>Preview</h2>
+  <video id="preview" width="160" height="120" autoplay muted></video>
+</div>
+두 개의 열로 구성된 메인 인터페이스를 보여줍니다. 왼쪽에는 시작 버튼과 <video> 요소가 배치되어 있는데, 이 요소는 사용자 카메라에서 촬영하는 영상을 미리 보여줍니다. 스트림이 카메라에서 도착하는 즉시 영상이 표시되도록 autoplay 속성을 사용하며, muted 속성을 지정해 사용자의 마이크 소리가 스피커로 출력되어 피드백 루프가 발생하지 않도록 합니다.
+
+html
+
+Copy
+Play
+<div class="right">
+  <div id="stopButton" class="button">Stop Recording</div>
+  <h2>Recording</h2>
+  <video id="recording" width="160" height="120" controls></video>
+  <a id="downloadButton" class="button">Download</a>
+</div>
+오른쪽에는 중지 버튼과 녹화된 영상을 재생할 <video> 요소가 있습니다. 재생 패널에는 autoplay 속성이 없어서 미디어가 도착하자마자 자동 재생되지 않으며, controls 속성이 지정되어 있어 사용자가 재생, 일시 정지 등 다양한 조작을 할 수 있습니다.
+
+재생 요소 아래에는 녹화된 비디오를 다운로드할 수 있는 버튼이 있습니다.
+
+이제 자바스크립트 코드를 살펴보겠습니다. 결국 여기서 대부분의 동작이 이루어지니까요!
+
+전역 변수 설정
+필요한 몇 가지 전역 변수를 먼저 선언합니다.
+
+js
+
+Copy
+Play
+let preview = document.getElementById("preview");
+let recording = document.getElementById("recording");
+let startButton = document.getElementById("startButton");
+let stopButton = document.getElementById("stopButton");
+let downloadButton = document.getElementById("downloadButton");
+let logElement = document.getElementById("log");
+
+let recordingTimeMS = 5000;
+대부분은 작업할 요소들을 참조하는 변수들입니다. 마지막 변수인 recordingTimeMS는 5000밀리초(5초)로 설정되어 있는데, 이는 녹화할 비디오의 길이를 지정합니다.
+
+유틸리티 함수
+다음으로, 이후에 사용할 몇 가지 유틸리티 함수를 생성합니다.
+
+js
+
+Copy
+Play
+function log(msg) {
+  logElement.innerText += `${msg}\n`;
+}
+log() 함수는 텍스트 문자열을 <div>에 출력하여 사용자에게 정보를 전달하는 데 사용됩니다. 깔끔하진 않지만, 우리 목적에는 충분히 효과적입니다.
+
+js
+
+Copy
+Play
+function wait(delayInMS) {
+  return new Promise((resolve) => setTimeout(resolve, delayInMS));
+}
+wait() 함수는 지정한 밀리초가 경과한 후 이행되는 새 Promise를 반환합니다. 이 함수는 화살표 함수를 사용해 setTimeout()을 호출하고, 프로미스가 성공적으로 완료될 때 호출되는 이행 콜백 함수를 타임아웃 핸들러로 지정합니다. 이를 통해 타임아웃을 사용할 때도 프로미스 문법을 활용할 수 있어, 이후 프로미스 체이닝을 할 때 매우 유용합니다.
+
+미디어 녹화 시작
+startRecording() 함수는 녹화 과정을 시작하는 역할을 합니다.
+
+js
+
+Copy
+Play
+function startRecording(stream, lengthInMS) {
+  let recorder = new MediaRecorder(stream);
+  let data = [];
+
+  recorder.ondataavailable = (event) => data.push(event.data);
+  recorder.start();
+  log(`${recorder.state} for ${lengthInMS / 1000} seconds…`);
+
+  let stopped = new Promise((resolve, reject) => {
+    recorder.onstop = resolve;
+    recorder.onerror = (event) => reject(event.name);
+  });
+
+  let recorded = wait(lengthInMS).then(() => {
+    if (recorder.state === "recording") {
+      recorder.stop();
+    }
+  });
+
+  return Promise.all([stopped, recorded]).then(() => data);
+}
+startRecording() 함수는 두 개의 입력 매개변수를 받습니다. 녹음할 MediaStream과 밀리초 단위의 녹음할 시간입니다. 항상 지정된 시간 내에서만 미디어를 녹음하며, 만약 그 시간보다 먼저 미디어가 중단되면 MediaRecorder가 자동으로 녹음을 멈춥니다.
+
+먼저 입력된 stream의 녹화를 처리할 MediaRecorder를 생성합니다.
+data는 초기에 빈 배열이며, ondataavailable 이벤트 핸들러에 의해 제공된 미디어 데이터의 Blob들을 저장합니다.
+ondataavailable 할당은 dataavailable 이벤트의 핸들러를 설정합니다. 수신된 이벤트의 data 속성은 미디어 데이터를 담고 있는 Blob이며, 이 핸들러는 해당 Blob을 data 배열에 추가합니다.
+recorder.start()를 호출하여 녹화를 시작하고, 레코더의 현재 상태와 녹화할 시간(초 단위)을 로그에 출력합니다.
+stopped라는 새로운 Promise를 생성하는데, 이는 MediaRecorder의 onstop 이벤트 핸들러가 호출되면 이행되고, onerror 이벤트 핸들러가 호출되면 거부됩니다. 거부 핸들러는 발생한 오류의 이름을 입력값으로 받습니다.
+또 다른 Promise인 recorded를 생성하는데, 이 프로미스는 지정된 밀리초가 경과하면 이행되며, 이행 시 녹화중인 경우 MediaRecorder를 정지합니다.
+마지막으로, Promise.all을 사용하여 두 개의 Promise(stopped와 recorded)가 모두 이행되면 이행되는 새로운 프로미스를 생성합니다. 이 프로미스가 이행되면, 배열 형태의 데이터가 startRecording() 함수의 호출자에게 반환됩니다.
+입력 스트림 중지
+stop() 함수는 입력 미디어의 재생을 중지시킵니다.
+
+js
+
+Copy
+Play
+function stop(stream) {
+  stream.getTracks().forEach((track) => track.stop());
+}
+이는 MediaStream.getTracks()를 호출한 뒤, forEach()를 사용해 스트림의 각 트랙에 대해 MediaStreamTrack.stop()을 호출함으로써 작동합니다.
+
+입력 스트림 가져오기 및 레코더 설정
+이제 이 예제에서 가장 복잡한 부분인, 시작 버튼 클릭에 대한 이벤트 핸들러 코드를 살펴보겠습니다.
+
+js
+
+Copy
+Play
+startButton.addEventListener(
+  "click",
+  () => {
+    navigator.mediaDevices
+      .getUserMedia({
+        video: true,
+        audio: true,
+      })
+      .then((stream) => {
+        preview.srcObject = stream;
+        downloadButton.href = stream;
+        preview.captureStream =
+          preview.captureStream || preview.mozCaptureStream;
+        return new Promise((resolve) => (preview.onplaying = resolve));
+      })
+      .then(() => startRecording(preview.captureStream(), recordingTimeMS))
+      .then((recordedChunks) => {
+        let recordedBlob = new Blob(recordedChunks, { type: "video/webm" });
+        recording.src = URL.createObjectURL(recordedBlob);
+        downloadButton.href = recording.src;
+        downloadButton.download = "RecordedVideo.webm";
+
+        log(
+          `Successfully recorded ${recordedBlob.size} bytes of ${recordedBlob.type} media.`,
+        );
+      })
+      .catch((error) => {
+        if (error.name === "NotFoundError") {
+          log("Camera or microphone not found. Can't record.");
+        } else {
+          log(error);
+        }
+      });
+  },
+  false,
+);
+click 이벤트가 발생하면, 다음과 같이 진행됩니다.
+
+MediaDevices.getUserMedia를 호출하여 비디오와 오디오 트랙이 모두 포함된 새로운 MediaStream을 요청합니다. 이것이 우리가 녹화할 스트림입니다.
+
+getUserMedia()가 반환한 프로미스가 이행되면 <video> 요소의 srcObject 속성이 입력 스트림으로 설정되어, 사용자의 카메라에서 캡처되는 영상이 미리보기 상자에 표시됩니다. <video> 요소가 음소거되어 있으므로 오디오는 재생되지 않습니다. 이후 "Download" 버튼의 링크도 해당 스트림을 참조하도록 설정됩니다. 그리고 Firefox에서는 HTMLMediaElement.captureStream() 메서드에 접두어가 붙어 있기 때문에, preview.captureStream()이 preview.mozCaptureStream()을 호출하도록 조정합니다. 마지막으로, 미리보기 오디오가 재생되기 시작하면 이행되는 새로운 Promise가 생성되어 반환됩니다.
+
+미리보기 비디오가 재생되기 시작하면, 녹화할 미디어가 준비되었음을 알 수 있으므로, 앞서 생성한 startRecording() 함수를 호출합니다. 이때 미리보기 비디오 스트림(녹화할 소스 미디어)과 녹화할 시간(밀리초 단위)을 나타내는 recordingTimeMS를 인자로 전달합니다. 앞서 언급한 대로, startRecording() 함수는 녹화가 완료되면 녹화된 미디어 데이터 청크를 담은 Blob 객체 배열을 인자로 받아 이행 핸들러를 실행하는 Promise를 반환합니다.
+
+녹화 과정의 이행 핸들러는 recordedChunks라는 변수에 담긴 미디어 데이터 Blob 배열을 입력값으로 받습니다. 먼저, Blob() 생성자가 객체 배열을 하나의 객체로 이어 붙인다는 점을 활용하여, 이 청크들을 MIME 타입이 "video/webm"인 Blob으로 병합합니다. 그다음, URL.createObjectURL()을 사용해 blob을 참조하는 URL을 생성하고, 이 URL을 녹화된 비디오 재생 요소의 src 속성과 다운로드 버튼의 링크 대상으로 지정합니다.
+
+그런 다음 다운로드 버튼의 download 속성이 설정됩니다. download 속성은 불리언 값도 될 수 있지만, 문자열로 설정하여 다운로드되는 파일의 이름으로 사용할 수도 있습니다. 따라서 다운로드 링크의 download 속성을 "RecordedVideo.webm"으로 지정하면, 버튼을 클릭했을 때 그 내용이 녹화된 비디오인 "RecordedVideo.webm" 파일이 다운로드되도록 브라우저에 지시하는 것입니다.
+
+녹화된 미디어의 크기와 형식은 두 비디오와 다운로드 버튼 아래의 로그 영역에 출력됩니다.
+
+모든 Promise의 catch()는 우리의 log() 함수를 호출하여 오류를 로그 영역에 출력합니다.
+
+정지 버튼 처리
+마지막으로, addEventListener()를 사용해 정지 버튼의 click 이벤트에 대한 핸들러를 추가하는 코드입니다.
+
+js
+
+Copy
+Play
+stopButton.addEventListener(
+  "click",
+  () => {
+    stop(preview.srcObject);
+  },
+  false,
+);
+이는 앞서 다룬 stop() 함수를 호출합니다.
+
+결과
+전체 HTML과 위에 나타내지 않은 CSS와 함께 구성하면, 다음과 같이 보이고 작동합니다.
+MediaRecorder
+Baseline Widely available *
+The MediaRecorder interface of the MediaStream Recording API provides functionality to easily record media. It is created using the MediaRecorder() constructor.
+
+EventTarget
+MediaRecorder
+In this article
+Constructor
+Instance properties
+Static methods
+Instance methods
+Events
+Example
+Specifications
+Browser compatibility
+See also
+Constructor
+MediaRecorder()
+Creates a new MediaRecorder object, given a MediaStream to record. Options are available to do things like set the container's MIME type (such as "video/webm" or "video/mp4") and the bit rates of the audio and video tracks or a single overall bit rate.
+
+Instance properties
+MediaRecorder.mimeType Read only
+Returns the MIME type that was selected as the recording container for the MediaRecorder object when it was created.
+
+MediaRecorder.state Read only
+Returns the current state of the MediaRecorder object (inactive, recording, or paused.)
+
+MediaRecorder.stream Read only
+Returns the stream that was passed into the constructor when the MediaRecorder was created.
+
+MediaRecorder.videoBitsPerSecond Read only
+Returns the video encoding bit rate in use. This may differ from the bit rate specified in the constructor (if it was provided).
+
+MediaRecorder.audioBitsPerSecond Read only
+Returns the audio encoding bit rate in use. This may differ from the bit rate specified in the constructor (if it was provided).
+
+MediaRecorder.audioBitrateMode Read only Experimental
+Returns the bitrate mode used to encode audio tracks.
+
+Static methods
+MediaRecorder.isTypeSupported()
+A static method which returns a true or false value indicating if the given MIME media type is supported by the current user agent.
+
+Instance methods
+MediaRecorder.pause()
+Pauses the recording of media.
+
+MediaRecorder.requestData()
+Requests a Blob containing the saved data received thus far (or since the last time requestData() was called. After calling this method, recording continues, but in a new Blob.
+
+MediaRecorder.resume()
+Resumes recording of media after having been paused.
+
+MediaRecorder.start()
+Begins recording media; this method can optionally be passed a timeslice argument with a value in milliseconds. If this is specified, the media will be captured in separate chunks of that duration, rather than the default behavior of recording the media in a single large chunk.
+
+MediaRecorder.stop()
+Stops recording, at which point a dataavailable event containing the final Blob of saved data is fired. No more recording occurs.
+
+Events
+Listen to these events using addEventListener() or by assigning an event listener to the oneventname property of this interface.
+
+dataavailable
+Fires periodically each time timeslice milliseconds of media have been recorded (or when the entire media has been recorded, if timeslice wasn't specified). The event, of type BlobEvent, contains the recorded media in its data property.
+
+error
+Fired when there are fatal errors that stop recording. The received event is based on the MediaRecorderErrorEvent interface, whose error property contains a DOMException that describes the actual error that occurred.
+
+pause
+Fired when media recording is paused.
+
+resume
+Fired when media recording resumes after being paused.
+
+start
+Fired when media recording starts.
+
+stop
+Fired when media recording ends, either when the MediaStream ends, or after the MediaRecorder.stop() method is called.
+
+Example
+js
+
+Copy
+if (navigator.mediaDevices) {
+  console.log("getUserMedia supported.");
+
+  const constraints = { audio: true };
+  let chunks = [];
+
+  navigator.mediaDevices
+    .getUserMedia(constraints)
+    .then((stream) => {
+      const mediaRecorder = new MediaRecorder(stream);
+
+      record.onclick = () => {
+        mediaRecorder.start();
+        console.log(mediaRecorder.state);
+        console.log("recorder started");
+        record.style.background = "red";
+        record.style.color = "black";
+      };
+
+      stop.onclick = () => {
+        mediaRecorder.stop();
+        console.log(mediaRecorder.state);
+        console.log("recorder stopped");
+        record.style.background = "";
+        record.style.color = "";
+      };
+
+      mediaRecorder.onstop = (e) => {
+        console.log("data available after MediaRecorder.stop() called.");
+
+        const clipName = prompt("Enter a name for your sound clip");
+
+        const clipContainer = document.createElement("article");
+        const clipLabel = document.createElement("p");
+        const audio = document.createElement("audio");
+        const deleteButton = document.createElement("button");
+        const mainContainer = document.querySelector("body");
+
+        clipContainer.classList.add("clip");
+        audio.setAttribute("controls", "");
+        deleteButton.textContent = "Delete";
+        clipLabel.textContent = clipName;
+
+        clipContainer.appendChild(audio);
+        clipContainer.appendChild(clipLabel);
+        clipContainer.appendChild(deleteButton);
+        mainContainer.appendChild(clipContainer);
+
+        audio.controls = true;
+        const blob = new Blob(chunks, { type: "audio/ogg; codecs=opus" });
+        chunks = [];
+        const audioURL = URL.createObjectURL(blob);
+        audio.src = audioURL;
+        console.log("recorder stopped");
+
+        deleteButton.onclick = (e) => {
+          const evtTgt = e.target;
+          evtTgt.parentNode.parentNode.removeChild(evtTgt.parentNode);
+        };
+      };
+
+      mediaRecorder.ondataavailable = (e) => {
+        chunks.push(e.data);
+      };
+    })
+    .catch((err) => {
+      console.error(`The following error occurred: ${err}`);
+    });
+}
+MediaRecorder: MediaRecorder() constructor
+Baseline Widely available
+The MediaRecorder() constructor creates a new MediaRecorder object that will record a specified MediaStream.
+
+The object can optionally be configured to record using a specific media container (file type), and, further, can specify the exact codec and codec configuration(s) to use by specifying the codecs parameter.
+
+In this article
+Syntax
+Examples
+Specifications
+Browser compatibility
+See also
+Syntax
+js
+
+Copy
+new MediaRecorder(stream)
+new MediaRecorder(stream, options)
+Parameters
+stream
+The MediaStream that will be recorded. This source media can come from a stream created using navigator.mediaDevices.getUserMedia() or from an <audio>, <video> or <canvas> element.
+
+options Optional
+A dictionary object that can contain the following properties:
+
+mimeType Optional
+A MIME type specifying the format for the resulting media; you may specify the container format (the browser will select its preferred codecs for audio and/or video), or you may use the codecs parameter and/or the profiles parameter to provide detailed information about which codecs to use and how to configure them. Applications can check in advance if a mimeType is supported by the user agent by calling MediaRecorder.isTypeSupported(). Defaults to an empty string.
+
+audioBitsPerSecond Optional
+The chosen bitrate for the audio component of the media.
+
+videoBitsPerSecond Optional
+The chosen bitrate for the video component of the media.
+
+bitsPerSecond Optional
+The chosen bitrate for the audio and video components of the media. This can be specified instead of the above two properties. If this is specified along with one or the other of the above properties, this will be used for the one that isn't specified.
+
+audioBitrateMode Optional
+The bitrate mode that should be used to encode the audio. Can be constant, which indicates that the recorder should encode at a constant bitrate, or variable, which indicates that the recorder should encode using a variable bitrate, thus allowing more space to be used for complex signals and less space for less-complex signals. Defaults to variable.
+
+videoKeyFrameIntervalDuration Optional
+The nominal interval in time between key frames in the encoded video stream. The user agent controls key-frame generation based on this option and the videoKeyFrameIntervalCount option.
+
+videoKeyFrameIntervalCount Optional
+The interval in number of frames between key frames in the encoded video stream. The user agent controls key-frame generation considering this option as well as videoKeyFrameIntervalDuration option.
+
+Note: If bits per second values are not specified for video and/or audio, the default adopted for video is 2.5Mbps, while the audio default is adaptive, depending upon the sample rate and the number of channels.
+
+Note: Video resolution, frame rate and similar settings are specified as constraints when calling getUserMedia(), not here in the MediaStream Recording API.
+
+Exceptions
+NotSupportedError DOMException
+Thrown if the specified MIME type is not supported by the user agent.
+
+Examples
+This example shows how to create a media recorder for a specified stream, whose audio bit rate is set to 128 Kbit/sec and whose video bit rate is set to 2.5 Mbit/sec. The recorded media data will be stored in an MP4 wrapper (so if you gather the chunks of media data and save them to disk, they will be in an MP4 file).
+
+js
+
+Copy
+if (navigator.mediaDevices.getUserMedia) {
+  const constraints = { audio: true, video: true };
+  const chunks = [];
+
+  const onSuccess = (stream) => {
+    const options = {
+      audioBitsPerSecond: 128000,
+      videoBitsPerSecond: 2500000,
+      mimeType: "video/mp4",
+    };
+    const mediaRecorder = new MediaRecorder(stream, options);
+    m = mediaRecorder;
+
+    // …
+  };
+}
+ediaRecorder: audioBitrateMode property
+Limited availability
+Experimental: This is an experimental technology
+Check the Browser compatibility table carefully before using this in production.
+
+The audioBitrateMode read-only property of the MediaRecorder interface returns the bitrate mode used to encode audio tracks.
+
+In this article
+Value
+Specifications
+Browser compatibility
+Value
+One of the following:
+
+constant
+The MediaRecorder encodes at this constant bitrate.
+
+variable
+The MediaRecorder encodes using this variable bitrate, allowing more space to be used for complex signals and less space for less complex signals.
+
+MediaRecorder: audioBitsPerSecond property
+Baseline Widely available
+The audioBitsPerSecond read-only property of the MediaRecorder interface returns the audio encoding bit rate in use.
+
+This may differ from the bit rate specified in the constructor (if it was provided).
+
+In this article
+Value
+Specifications
+Browser compatibility
+Value
+A Number (unsigned long).
